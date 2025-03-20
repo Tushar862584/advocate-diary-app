@@ -1,0 +1,327 @@
+[
+  {
+    "case_type": "M.A.C.T - M.A.C.T.",
+    "filing": {
+      "number": "3227/2024",
+      "date": "30-05-2024"
+    },
+    "registration": {
+      "number": "138/2024",
+      "date": "05-06-2024"
+    },
+    "cnr_number": "DLND010049042024",
+    "case_status": {
+      "first_hearing_date": "05-06-2024",
+      "next_hearing_date": "30-04-2025",
+      "case_stage": "Misc. cases",
+      "court": {
+        "number": "53",
+        "judge": "Presiding Off.-MACT"
+      }
+    },
+    "petitioners": [
+      {
+        "name": "RASHMI JAIN AND ORS.",
+        "advocate": "Deependra Kumar Dixit"
+      },
+      {
+        "name": "Rajesh Kumar",
+        "advocate": "Deependra Kumar Dixit"
+      },
+      {
+        "name": "Vibha Jain",
+        "advocate": "Deependra Kumar Dixit"
+      },
+      {
+        "name": "Akash Jain",
+        "advocate": "Deependra Kumar Dixit"
+      }
+    ],
+    "respondents": [
+      {
+        "name": "ANIT SHAHA AND ORS."
+      }
+    ],
+    "acts": [
+      {
+        "act": "---",
+        "sections": [
+          "166"
+        ]
+      }
+    ],
+    "case_history": [
+      {
+        "judge": "Presiding Off.-MACT",
+        "business_on_date": "05-06-2024",
+        "hearing_date": "16-12-2024",
+        "purpose": "Misc. cases"
+      },
+      {
+        "judge": "Presiding Off.-MACT",
+        "business_on_date": "16-12-2024",
+        "hearing_date": "27-02-2025",
+        "purpose": "Misc. cases"
+      },
+      {
+        "judge": "Presiding Off.-MACT",
+        "business_on_date": "27-02-2025",
+        "hearing_date": "30-04-2025",
+        "purpose": "Misc. cases"
+      }
+    ],
+    "interim_orders": [
+      {
+        "order_number": "1",
+        "order_date": "05-06-2024",
+        "order_details": "COPY OF ORDER"
+      },
+      {
+        "order_number": "2",
+        "order_date": "16-12-2024",
+        "order_details": "COPY OF ORDER"
+      },
+      {
+        "order_number": "3",
+        "order_date": "27-02-2025",
+        "order_details": "COPY OF JUDICIAL PROCEEDINGS"
+      }
+    ]
+  },
+  {
+    "case_type": "M.A.C.T - M.A.C.T.",
+    "filing": {
+      "number": "1174/2024",
+      "date": "26-02-2024"
+    },
+    "registration": {
+      "number": "68/2024",
+      "date": "07-03-2024"
+    },
+    "cnr_number": "DLND010017992024",
+    "case_status": {
+      "first_hearing_date": "07-03-2024",
+      "next_hearing_date": "19-07-2025",
+      "case_stage": "Misc. cases",
+      "court": {
+        "number": "53",
+        "judge": "Presiding Off.-MACT"
+      }
+    },
+    "petitioners": [
+      {
+        "name": "Mohd. Jainul Abdin",
+        "advocate": "Saurabh Kumar"
+      }
+    ],
+    "respondents": [
+      {
+        "name": "Lt. Shyam Sundar Kumar And Ors."
+      }
+    ],
+    "acts": [
+      {
+        "act": "Motor Vehicle Act",
+        "sections": [
+          "166"
+        ]
+      }
+    ],
+    "case_history": [
+      {
+        "judge": "Presiding Off.-MACT",
+        "business_on_date": "07-03-2024",
+        "hearing_date": "09-12-2024",
+        "purpose": "Misc. cases"
+      },
+      {
+        "judge": "Presiding Off.-MACT",
+        "business_on_date": "09-12-2024",
+        "hearing_date": "19-07-2025",
+        "purpose": "Misc. cases"
+      }
+    ],
+    "interim_orders": [
+      {
+        "order_number": "1",
+        "order_date": "09-12-2024",
+        "order_details": "COPY OF ORDER"
+      }
+    ]
+  },
+  {
+    "case_type": "CS - CIVIL SUIT FOR DJ and ADJ",
+    "filing": {
+      "number": "6323/2024",
+      "date": "18-12-2024"
+    },
+    "registration": {
+      "number": "4337/2024",
+      "date": "23-12-2024"
+    },
+    "cnr_number": "DLND010101752024",
+    "case_status": {
+      "first_hearing_date": "23-12-2024",
+      "next_hearing_date": "17-04-2025",
+      "case_stage": "Misc. cases",
+      "court": {
+        "number": "16",
+        "judge": "District Judge-02"
+      }
+    },
+    "petitioners": [
+      {
+        "name": "UJJAINI CHATTERJI",
+        "advocate": "Rishi Nandy"
+      }
+    ],
+    "respondents": [
+      {
+        "name": "RAINY SHARMA AND ORS."
+      },
+      {
+        "name": "MANASTU SPACE"
+      }
+    ],
+    "acts": [
+      {
+        "act": "Recovery of Money",
+        "sections": [
+          "CPC"
+        ]
+      }
+    ],
+    "case_history": [
+      {
+        "judge": "District Judge-02",
+        "business_on_date": "23-12-2024",
+        "hearing_date": "15-01-2025",
+        "purpose": "Misc. cases"
+      },
+      {
+        "judge": "District Judge-02",
+        "business_on_date": "15-01-2025",
+        "hearing_date": "17-04-2025",
+        "purpose": "Misc. cases"
+      }
+    ],
+    "interim_orders": [
+      {
+        "order_number": "1",
+        "order_date": "15-01-2025",
+        "order_details": "COPY OF ORDER"
+      }
+    ]
+  },
+  {
+    "case_type": "CS - CIVIL SUIT FOR DJ and ADJ",
+    "filing": {
+      "number": "5307/2024",
+      "date": "16-10-2024"
+    },
+    "registration": {
+      "number": "4237/2024",
+      "date": "21-10-2024"
+    },
+    "cnr_number": "DLND010084552024",
+    "case_status": {
+      "first_hearing_date": "21-10-2024",
+      "next_hearing_date": "23-04-2025",
+      "case_stage": "Misc. Arguments",
+      "court": {
+        "number": "768",
+        "judge": "District Judge-05"
+      }
+    },
+    "petitioners": [
+      {
+        "name": "DR ER RAJAINDERR JAINA",
+        "advocate": "KANISHK KHARBANDA"
+      }
+    ],
+    "respondents": [
+      {
+        "name": "SH GOPAL RELKAR"
+      }
+    ],
+    "acts": [
+      {
+        "act": "Suits for recovery and Damages",
+        "sections": [
+          "88"
+        ]
+      }
+    ],
+    "case_history": [
+      {
+        "judge": "District Judge-03",
+        "business_on_date": "21-10-2024",
+        "hearing_date": "25-10-2024",
+        "purpose": "Misc. cases"
+      },
+      {
+        "judge": "District Judge-03",
+        "business_on_date": "25-10-2024",
+        "hearing_date": "28-10-2024",
+        "purpose": "Misc. Arguments"
+      },
+      {
+        "judge": "District Judge-05",
+        "business_on_date": "28-10-2024",
+        "hearing_date": "10-12-2024",
+        "purpose": "Misc. Arguments"
+      },
+      {
+        "judge": "District Judge-05",
+        "business_on_date": "10-12-2024",
+        "hearing_date": "06-02-2025",
+        "purpose": "Misc. Arguments"
+      },
+      {
+        "judge": "District Judge-05",
+        "business_on_date": "06-02-2025",
+        "hearing_date": "23-04-2025",
+        "purpose": "Misc. Arguments"
+      }
+    ],
+    "interim_orders": [
+      {
+        "order_number": "1",
+        "order_date": "21-10-2024",
+        "order_details": "COPY OF JUDICIAL PROCEEDINGS"
+      },
+      {
+        "order_number": "2",
+        "order_date": "25-10-2024",
+        "order_details": "COPY OF JUDICIAL PROCEEDINGS"
+      },
+      {
+        "order_number": "3",
+        "order_date": "28-10-2024",
+        "order_details": "COPY OF JUDICIAL PROCEEDINGS"
+      },
+      {
+        "order_number": "4",
+        "order_date": "10-12-2024",
+        "order_details": "COPY OF JUDICIAL PROCEEDINGS"
+      },
+      {
+        "order_number": "5",
+        "order_date": "06-02-2025",
+        "order_details": "COPY OF JUDICIAL PROCEEDINGS"
+      }
+    ],
+    "case_transfer_details": {
+      "registration_number": "4237/2024",
+      "transfer_date": "28-10-2024",
+      "from_court": {
+        "number": "13",
+        "judge": "District Judge-03"
+      },
+      "to_court": {
+        "number": "768",
+        "judge": "District Judge-05"
+      }
+    }
+  }
+]

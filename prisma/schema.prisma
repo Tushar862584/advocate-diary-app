@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cases     Case[]
+  notes     Note[]
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+model Case {
+  id               String    @id @default(uuid())
+  caseType         String
+  registrationYear Int
+  registrationNum  Int
+  title            String
+  courtName        String
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes            Note[]
+  hearings         Hearing[]
+  uploads          Upload[]
+  petitioners      Petitioner[]
+  respondents      Respondent[]
+
+  @@unique([caseType, registrationYear, registrationNum])
+}
+
+model Petitioner {
+  id      String @id @default(uuid())
+  name    String
+  caseId  String
+  case    Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+}
+
+model Respondent {
+  id      String @id @default(uuid())
+  name    String
+  caseId  String
+  case    Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+}
+
+model Note {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  caseId    String
+  case      Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Hearing {
+  id           String   @id @default(uuid())
+  date         DateTime
+  notes        String?
+  nextDate     DateTime?
+  nextPurpose  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  caseId       String
+  case         Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+}
+
+model Upload {
+  id        String   @id @default(uuid())
+  fileName  String
+  fileUrl   String
+  fileType  String
+  createdAt DateTime @default(now())
+  caseId    String
+  case      Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+} 

@@ -1,5 +1,5 @@
-import { ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 /**
  * A utility function that merges multiple class names together
@@ -15,12 +15,12 @@ export function cn(...inputs: ClassValue[]) {
 export function formatDate(
   date: Date | string | number,
   options: Intl.DateTimeFormatOptions = {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
+    month: "long",
+    day: "numeric",
+    year: "numeric",
   }
 ) {
-  return new Intl.DateTimeFormat('en-US', options).format(new Date(date));
+  return new Intl.DateTimeFormat("en-US", options).format(new Date(date));
 }
 
 /**
@@ -39,13 +39,13 @@ export function debounce<T extends (...args: any[]) => any>(
   wait: number
 ): (...args: Parameters<T>) => void {
   let timeout: ReturnType<typeof setTimeout> | null = null;
-  
-  return function(...args: Parameters<T>) {
+
+  return function (...args: Parameters<T>) {
     const later = () => {
       timeout = null;
       func(...args);
     };
-    
+
     if (timeout) clearTimeout(timeout);
     timeout = setTimeout(later, wait);
   };

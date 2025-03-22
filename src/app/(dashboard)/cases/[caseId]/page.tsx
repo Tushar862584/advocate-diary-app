@@ -30,7 +30,7 @@ export default async function CaseDetailPage({
   params: { caseId: string };
 }) {
   const session = await getServerSession(authOptions);
-  
+
   if (!session) {
     redirect("/login");
   }
@@ -63,10 +63,10 @@ export default async function CaseDetailPage({
   if (!caseDetail) {
     notFound();
   }
-   
+
   // Check if user is owner
   const isOwner = caseDetail.userId === session.user?.id;
-  
+
   // Only allow access if user is admin or owner
   if (!isAdmin && !isOwner) {
     notFound();
@@ -77,7 +77,7 @@ export default async function CaseDetailPage({
   const respondents = caseDetail.respondents as Respondent[];
 
   // Format hearings data for the component
-  const formattedHearings = caseDetail.hearings.map(h => ({
+  const formattedHearings = caseDetail.hearings.map((h) => ({
     id: h.id,
     date: h.date.toISOString(),
     notes: h.notes,
@@ -85,7 +85,7 @@ export default async function CaseDetailPage({
     nextPurpose: h.nextPurpose,
     createdAt: h.createdAt.toISOString(),
     updatedAt: h.updatedAt.toISOString(),
-    caseId: h.caseId
+    caseId: h.caseId,
   }));
 
   // Determine if the user can edit content based on their role
@@ -96,14 +96,18 @@ export default async function CaseDetailPage({
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <Link href="/cases" className="text-sm text-blue-600 hover:underline">
+            <Link
+              href="/cases"
+              className="text-sm text-blue-600 hover:underline"
+            >
               ← Back to Cases
             </Link>
             <h1 className="mt-2 text-2xl font-bold">
-              {caseDetail.caseType}/{caseDetail.registrationNum} - {caseDetail.title}
+              {caseDetail.caseType}/{caseDetail.registrationNum} -{" "}
+              {caseDetail.title}
             </h1>
           </div>
-          
+
           <div>
             {(isAdmin || isOwner) && (
               <Link
@@ -115,32 +119,34 @@ export default async function CaseDetailPage({
             )}
           </div>
         </div>
-        
+
         <div className="mt-4 rounded-lg border bg-white p-4">
           <h2 className="mb-4 text-lg font-bold">Case Details</h2>
-          
+
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <p className="text-sm text-gray-500">Case Type</p>
               <p>{caseDetail.caseType}</p>
             </div>
-            
+
             <div>
               <p className="text-sm text-gray-500">Registration Number</p>
-              <p>{caseDetail.registrationYear}/{caseDetail.registrationNum}</p>
+              <p>
+                {caseDetail.registrationYear}/{caseDetail.registrationNum}
+              </p>
             </div>
-            
+
             <div>
               <p className="text-sm text-gray-500">Court</p>
               <p>{caseDetail.courtName}</p>
             </div>
-            
+
             <div>
               <p className="text-sm text-gray-500">Filed By</p>
               <p>{caseDetail.user?.name || "Not assigned"}</p>
             </div>
           </div>
-          
+
           <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <p className="text-sm text-gray-500">Petitioners</p>
@@ -149,13 +155,16 @@ export default async function CaseDetailPage({
                   <li key={petitioner.id}>
                     {petitioner.name}
                     {petitioner.advocate && (
-                      <span className="text-sm text-gray-500"> (Adv: {petitioner.advocate})</span>
+                      <span className="text-sm text-gray-500">
+                        {" "}
+                        (Adv: {petitioner.advocate})
+                      </span>
                     )}
                   </li>
                 ))}
               </ul>
             </div>
-            
+
             <div>
               <p className="text-sm text-gray-500">Respondents</p>
               <ul className="list-inside list-disc">
@@ -163,7 +172,10 @@ export default async function CaseDetailPage({
                   <li key={respondent.id}>
                     {respondent.name}
                     {respondent.advocate && (
-                      <span className="text-sm text-gray-500"> (Adv: {respondent.advocate})</span>
+                      <span className="text-sm text-gray-500">
+                        {" "}
+                        (Adv: {respondent.advocate})
+                      </span>
                     )}
                   </li>
                 ))}
@@ -175,7 +187,7 @@ export default async function CaseDetailPage({
 
       {/* Case Assignment Section - Only visible to admins */}
       {isAdmin && (
-        <CaseAssignment 
+        <CaseAssignment
           caseId={caseId}
           currentUserId={caseDetail.userId}
           currentUserName={caseDetail.user?.name || null}
@@ -187,27 +199,27 @@ export default async function CaseDetailPage({
       <CaseTabs
         caseId={caseId}
         hearingsComponent={
-          <CaseHearings 
-            caseId={caseId} 
-            hearings={formattedHearings} 
-            canEdit={canEdit} 
+          <CaseHearings
+            caseId={caseId}
+            hearings={formattedHearings}
+            canEdit={canEdit}
           />
         }
         notesComponent={
-          <CaseNotes 
-            caseId={caseId} 
-            notes={caseDetail.notes} 
+          <CaseNotes
+            caseId={caseId}
+            notes={caseDetail.notes}
             canAdd={canEdit}
           />
         }
         filesComponent={
-          <CaseFiles 
-            caseId={caseId} 
-            files={caseDetail.uploads} 
+          <CaseFiles
+            caseId={caseId}
+            files={caseDetail.uploads}
             canUpload={canEdit}
           />
         }
       />
     </div>
   );
-} 
+}

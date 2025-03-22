@@ -1,80 +1,88 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Alert } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/Card";
+import { Alert } from "@/components/ui/Alert";
+import { Button } from "@/components/ui/Button";
 
 export default function ChangePasswordPage() {
-  const router = useRouter();
   const [formData, setFormData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Reset states
-    setError('');
-    setSuccess('');
-    
+    setError("");
+    setSuccess("");
+
     // Validation
-    if (!formData.currentPassword || !formData.newPassword || !formData.confirmPassword) {
-      setError('All fields are required');
+    if (
+      !formData.currentPassword ||
+      !formData.newPassword ||
+      !formData.confirmPassword
+    ) {
+      setError("All fields are required");
       return;
     }
-    
+
     if (formData.newPassword.length < 8) {
-      setError('New password must be at least 8 characters');
+      setError("New password must be at least 8 characters");
       return;
     }
-    
+
     if (formData.newPassword !== formData.confirmPassword) {
-      setError('New passwords do not match');
+      setError("New passwords do not match");
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
-      const response = await fetch('/api/users/change-password', {
-        method: 'POST',
+      const response = await fetch("/api/users/change-password", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           currentPassword: formData.currentPassword,
           newPassword: formData.newPassword,
         }),
       });
-      
+
       const data = await response.json();
-      
+
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to change password');
+        throw new Error(data.error || "Failed to change password");
       }
-      
+
       // Reset form and show success message
       setFormData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
       });
-      
-      setSuccess('Password changed successfully');
+
+      setSuccess("Password changed successfully");
     } catch (err: any) {
-      setError(err.message || 'An error occurred');
+      setError(err.message || "An error occurred");
     } finally {
       setIsSubmitting(false);
     }
@@ -89,24 +97,33 @@ export default function ChangePasswordPage() {
             Update your account password
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent className="pt-6">
           {error && (
-            <Alert variant="error" className="mb-6 bg-red-50 border-red-200 text-red-800">
+            <Alert
+              variant="error"
+              className="mb-6 bg-red-50 border-red-200 text-red-800"
+            >
               {error}
             </Alert>
           )}
-          
+
           {success && (
-            <Alert variant="success" className="mb-6 bg-green-50 border-green-200 text-green-800">
+            <Alert
+              variant="success"
+              className="mb-6 bg-green-50 border-green-200 text-green-800"
+            >
               {success}
             </Alert>
           )}
-          
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
               <div>
-                <label htmlFor="currentPassword" className="block text-sm font-medium text-slate-700 mb-1">
+                <label
+                  htmlFor="currentPassword"
+                  className="block text-sm font-medium text-slate-700 mb-1"
+                >
                   Current Password
                 </label>
                 <input
@@ -119,9 +136,12 @@ export default function ChangePasswordPage() {
                   disabled={isSubmitting}
                 />
               </div>
-              
+
               <div>
-                <label htmlFor="newPassword" className="block text-sm font-medium text-slate-700 mb-1">
+                <label
+                  htmlFor="newPassword"
+                  className="block text-sm font-medium text-slate-700 mb-1"
+                >
                   New Password
                 </label>
                 <input
@@ -134,9 +154,12 @@ export default function ChangePasswordPage() {
                   disabled={isSubmitting}
                 />
               </div>
-              
+
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 mb-1">
+                <label
+                  htmlFor="confirmPassword"
+                  className="block text-sm font-medium text-slate-700 mb-1"
+                >
                   Confirm New Password
                 </label>
                 <input
@@ -150,7 +173,7 @@ export default function ChangePasswordPage() {
                 />
               </div>
             </div>
-            
+
             <div className="flex justify-end">
               <Button
                 type="submit"
@@ -158,7 +181,7 @@ export default function ChangePasswordPage() {
                 disabled={isSubmitting}
                 className="bg-slate-800 hover:bg-slate-700 text-white"
               >
-                {isSubmitting ? 'Updating...' : 'Change Password'}
+                {isSubmitting ? "Updating..." : "Change Password"}
               </Button>
             </div>
           </form>
@@ -166,4 +189,4 @@ export default function ChangePasswordPage() {
       </Card>
     </div>
   );
-} 
+}

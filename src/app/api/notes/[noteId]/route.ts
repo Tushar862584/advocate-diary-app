@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
 export async function DELETE(
@@ -10,10 +10,7 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const noteId = params.noteId;
@@ -33,10 +30,7 @@ export async function DELETE(
     });
 
     if (!note) {
-      return NextResponse.json(
-        { error: "Note not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
 
     // Check if user owns this note directly (created it) or owns the case
@@ -65,4 +59,4 @@ export async function DELETE(
       { status: 500 }
     );
   }
-} 
+}

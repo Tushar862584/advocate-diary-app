@@ -26,15 +26,18 @@ interface Note {
   id: string;
   content: string;
   createdAt: Date;
-  user: User;
+  userId?: string;
+  user?: User;
 }
 
 interface CaseNotesProps {
   caseId: string;
   notes: Note[];
+  canAdd?: boolean;
+  currentUserId?: string;
 }
 
-export function CaseNotes({ caseId, notes }: CaseNotesProps) {
+export function CaseNotes({ caseId, notes, canAdd = true, currentUserId }: CaseNotesProps) {
   const router = useRouter();
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
@@ -46,7 +49,7 @@ export function CaseNotes({ caseId, notes }: CaseNotesProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim()) return;
+    if (!content.trim() || !canAdd) return;
 
     setLoading(true);
 
@@ -100,6 +103,11 @@ export function CaseNotes({ caseId, notes }: CaseNotesProps) {
     }
   };
 
+  const cancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setNoteToDelete(null);
+  };
+
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query.toLowerCase());
   }, []);
@@ -108,7 +116,7 @@ export function CaseNotes({ caseId, notes }: CaseNotesProps) {
   const filteredNotes = notes.filter(note => 
     !searchQuery || 
     note.content.toLowerCase().includes(searchQuery) ||
-    note.user.name.toLowerCase().includes(searchQuery)
+    note.user?.name.toLowerCase().includes(searchQuery)
   );
 
   // Group notes by date if enabled
@@ -117,7 +125,7 @@ export function CaseNotes({ caseId, notes }: CaseNotesProps) {
       if (searchQuery) {
         return <p className="text-sm text-slate-400">No notes match your search query.</p>;
       }
-      return <p className="text-sm text-slate-400">No notes yet. Add the first note above.</p>;
+      return <p className="text-sm text-slate-400">No notes yet. {canAdd ? 'Add the first note above.' : ''}</p>;
     }
 
     if (!groupByDateEnabled) {
@@ -145,18 +153,21 @@ export function CaseNotes({ caseId, notes }: CaseNotesProps) {
   const renderNoteItem = (note: Note) => (
     <div key={note.id} className="rounded-lg border border-slate-700 bg-slate-800 p-4">
       <div className="mb-2 flex items-center justify-between">
-        <div className="font-medium text-blue-300">{note.user.name}</div>
+        <div className="font-medium text-blue-300">{note.user?.name || "Former User"}</div>
         <div className="flex items-center space-x-2">
           <div className="text-sm text-slate-400">
             {formatRelativeTime(note.createdAt)}
           </div>
-          <button 
-            onClick={() => handleDelete(note.id)}
-            className="text-slate-400 hover:text-red-400"
-            title="Delete note"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
+          {/* Only show delete button if user has permission */}
+          {canAdd && (
+            <button 
+              onClick={() => handleDelete(note.id)}
+              className="text-slate-400 hover:text-red-400"
+              title="Delete note"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
       <p className="whitespace-pre-wrap text-slate-200">{note.content}</p>
@@ -165,7 +176,7 @@ export function CaseNotes({ caseId, notes }: CaseNotesProps) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
         <h2 className="text-lg font-bold text-slate-100">Notes & Comments</h2>
         <div className="flex items-center">
           <label className="flex items-center cursor-pointer">
@@ -190,26 +201,29 @@ export function CaseNotes({ caseId, notes }: CaseNotesProps) {
         />
       </div>
 
-      <div className="mb-6 rounded-lg border border-slate-700 bg-slate-800 p-4">
-        <form onSubmit={handleSubmit}>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="w-full rounded-md border border-slate-700 bg-slate-900 p-2 text-slate-200"
-            placeholder="Add a note..."
-            rows={3}
-          />
-          <div className="mt-2 flex justify-end">
-            <button
-              type="submit"
-              disabled={loading || !content.trim()}
-              className="rounded-md bg-blue-700 px-4 py-2 text-white hover:bg-blue-600 disabled:opacity-50"
-            >
-              {loading ? "Adding..." : "Add Note"}
-            </button>
-          </div>
-        </form>
-      </div>
+      {/* Only show the add note form if the user has permission */}
+      {canAdd && (
+        <div className="mb-5 rounded-lg border border-slate-700 bg-slate-800 p-3 sm:p-4">
+          <form onSubmit={handleSubmit}>
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className="w-full rounded-md border border-slate-700 bg-slate-900 p-2 text-slate-200"
+              placeholder="Add a note..."
+              rows={3}
+            />
+            <div className="mt-2 flex justify-end">
+              <button
+                type="submit"
+                disabled={loading || !content.trim()}
+                className="rounded-md bg-blue-700 px-3 py-2 text-sm sm:text-base text-white hover:bg-blue-600 disabled:opacity-50 sm:px-4"
+              >
+                {loading ? "Adding..." : "Add Note"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       <div className="space-y-4">
         {renderNotes()}
@@ -224,7 +238,7 @@ export function CaseNotes({ caseId, notes }: CaseNotesProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={cancelDelete} disabled={deleteLoading}>Cancel</AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmDelete}
               disabled={deleteLoading}

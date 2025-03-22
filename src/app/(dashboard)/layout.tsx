@@ -1,22 +1,30 @@
-import { Sidebar } from "@/components/layout/sidebar";
-import { getServerSession } from "next-auth";
+// SERVER COMPONENT
+import type { Metadata } from "next";
+import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
+import { authOptions } from "@/lib/auth";
+import { DashboardClientWrapper } from "@/components/dashboard/client";
+
+export const metadata: Metadata = {
+  title: "Advocate Diary - Dashboard",
+  description: "Your legal case management solution",
+};
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession();
-
+  // Get server session here on the server
+  const session = await getServerSession(authOptions);
+  
   if (!session) {
+    // Redirect to login if no session exists
     redirect("/login");
   }
 
-  return (
-    <div className="flex h-screen bg-slate-800">
-      <Sidebar />
-      <main className="flex-1 overflow-auto p-6 bg-slate-800 text-slate-100">{children}</main>
-    </div>
-  );
+  const isAdmin = session.user?.role === "ADMIN";
+  
+  // Pass the session and children to client component
+  return <DashboardClientWrapper>{children}</DashboardClientWrapper>;
 } 

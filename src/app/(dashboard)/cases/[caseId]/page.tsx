@@ -1,11 +1,28 @@
 import { prisma } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { notFound, redirect } from "next/navigation";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import Link from "next/link";
 import { CaseNotes } from "@/components/cases/case-notes";
-import { CaseHearings } from "@/components/cases/case-hearings";
+import CaseHearings from "@/components/case/CaseHearings";
 import { CaseFiles } from "@/components/cases/case-files";
+import CaseTabs from "@/components/case/CaseTabs";
+import CaseAssignment from "@/components/case/CaseAssignment";
+
+// Define the structure for petitioner and respondent objects
+interface Petitioner {
+  id: string;
+  name: string;
+  advocate?: string | null;
+  caseId: string;
+}
+
+interface Respondent {
+  id: string;
+  name: string;
+  advocate?: string | null;
+  caseId: string;
+}
 
 export default async function CaseDetailPage({
   params,
@@ -18,7 +35,8 @@ export default async function CaseDetailPage({
     redirect("/login");
   }
 
-  const {caseId} = await params;
+  // Properly await the params to fix Next.js error
+  const { caseId } = await Promise.resolve(params);
   const isAdmin = session.user?.role === "ADMIN";
 
   // Fetch case with details
@@ -41,10 +59,37 @@ export default async function CaseDetailPage({
     },
   });
 
-  // Check if case exists and user has permission to view
-  if (!caseDetail || (!isAdmin && caseDetail.userId !== session.user?.id)) {
+  // Check if case exists
+  if (!caseDetail) {
     notFound();
   }
+   
+  // Check if user is owner
+  const isOwner = caseDetail.userId === session.user?.id;
+  
+  // Only allow access if user is admin or owner
+  if (!isAdmin && !isOwner) {
+    notFound();
+  }
+
+  // Safely access the petitioners and respondents with proper typing
+  const petitioners = caseDetail.petitioners as Petitioner[];
+  const respondents = caseDetail.respondents as Respondent[];
+
+  // Format hearings data for the component
+  const formattedHearings = caseDetail.hearings.map(h => ({
+    id: h.id,
+    date: h.date.toISOString(),
+    notes: h.notes,
+    nextDate: h.nextDate ? h.nextDate.toISOString() : null,
+    nextPurpose: h.nextPurpose,
+    createdAt: h.createdAt.toISOString(),
+    updatedAt: h.updatedAt.toISOString(),
+    caseId: h.caseId
+  }));
+
+  // Determine if the user can edit content based on their role
+  const canEdit = isAdmin || isOwner;
 
   return (
     <div>
@@ -60,12 +105,14 @@ export default async function CaseDetailPage({
           </div>
           
           <div>
-            <Link
-              href={`/cases/${caseId}/edit`}
-              className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-            >
-              Edit Case
-            </Link>
+            {(isAdmin || isOwner) && (
+              <Link
+                href={`/cases/${caseId}/edit`}
+                className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+              >
+                Edit Case
+              </Link>
+            )}
           </div>
         </div>
         
@@ -90,7 +137,7 @@ export default async function CaseDetailPage({
             
             <div>
               <p className="text-sm text-gray-500">Filed By</p>
-              <p>{caseDetail.user.name}</p>
+              <p>{caseDetail.user?.name || "Not assigned"}</p>
             </div>
           </div>
           
@@ -98,8 +145,13 @@ export default async function CaseDetailPage({
             <div>
               <p className="text-sm text-gray-500">Petitioners</p>
               <ul className="list-inside list-disc">
-                {caseDetail.petitioners.map((petitioner) => (
-                  <li key={petitioner.id}>{petitioner.name}</li>
+                {petitioners.map((petitioner) => (
+                  <li key={petitioner.id}>
+                    {petitioner.name}
+                    {petitioner.advocate && (
+                      <span className="text-sm text-gray-500"> (Adv: {petitioner.advocate})</span>
+                    )}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -107,8 +159,13 @@ export default async function CaseDetailPage({
             <div>
               <p className="text-sm text-gray-500">Respondents</p>
               <ul className="list-inside list-disc">
-                {caseDetail.respondents.map((respondent) => (
-                  <li key={respondent.id}>{respondent.name}</li>
+                {respondents.map((respondent) => (
+                  <li key={respondent.id}>
+                    {respondent.name}
+                    {respondent.advocate && (
+                      <span className="text-sm text-gray-500"> (Adv: {respondent.advocate})</span>
+                    )}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -116,35 +173,41 @@ export default async function CaseDetailPage({
         </div>
       </div>
 
-      {/* Tabs for different sections */}
-      <div className="mb-6 border-b">
-        <nav className="-mb-px flex space-x-8">
-          <a href={`#hearings`} className="border-b-2 border-blue-500 py-4 px-1 text-sm font-medium text-blue-600">
-            Hearings
-          </a>
-          <a href={`#notes`} className="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
-            Notes
-          </a>
-          <a href={`#files`} className="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
-            Files
-          </a>
-        </nav>
-      </div>
+      {/* Case Assignment Section - Only visible to admins */}
+      {isAdmin && (
+        <CaseAssignment 
+          caseId={caseId}
+          currentUserId={caseDetail.userId}
+          currentUserName={caseDetail.user?.name || null}
+          isAdmin={isAdmin}
+        />
+      )}
 
-      {/* Hearings Section */}
-      <div id="hearings" className="mb-8">
-        <CaseHearings caseId={caseId} hearings={caseDetail.hearings} />
-      </div>
-      
-      {/* Notes Section */}
-      <div id="notes" className="mb-8">
-        <CaseNotes caseId={caseId} notes={caseDetail.notes} />
-      </div>
-      
-      {/* Files Section */}
-      <div id="files">
-        <CaseFiles caseId={caseId} files={caseDetail.uploads} />
-      </div>
+      {/* Replace the old tabs and sections with the new CaseTabs component */}
+      <CaseTabs
+        caseId={caseId}
+        hearingsComponent={
+          <CaseHearings 
+            caseId={caseId} 
+            hearings={formattedHearings} 
+            canEdit={canEdit} 
+          />
+        }
+        notesComponent={
+          <CaseNotes 
+            caseId={caseId} 
+            notes={caseDetail.notes} 
+            canAdd={canEdit}
+          />
+        }
+        filesComponent={
+          <CaseFiles 
+            caseId={caseId} 
+            files={caseDetail.uploads} 
+            canUpload={canEdit}
+          />
+        }
+      />
     </div>
   );
 } 

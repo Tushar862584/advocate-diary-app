@@ -52,7 +52,7 @@ body {
   --foreground: #f1f5f9;
 }
 
-:root {
+  :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -85,6 +85,28 @@ body {
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+
+  /* Professional color palette for lawyer portal */
+  --color-primary: 51 65 85; /* slate-700 */
+  --color-primary-light: 71 85 105; /* slate-600 */
+  --color-primary-dark: 30 41 59; /* slate-800 */
+  
+  --color-accent: 59 130 246; /* blue-500 */
+  --color-accent-light: 96 165 250; /* blue-400 */
+  --color-accent-dark: 37 99 235; /* blue-600 */
+  
+  --color-success: 34 197 94; /* green-500 */
+  --color-error: 239 68 68; /* red-500 */
+  --color-warning: 245 158 11; /* amber-500 */
+  
+  --color-text-primary: 15 23 42; /* slate-900 */
+  --color-text-secondary: 71 85 105; /* slate-600 */
+  --color-text-tertiary: 148 163 184; /* slate-400 */
+  
+  --color-bg-primary: 255 255 255; /* white */
+  --color-bg-secondary: 248 250 252; /* slate-50 */
+  --color-bg-tertiary: 241 245 249; /* slate-100 */
 }
 
 .dark {
@@ -128,4 +150,287 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Improve font rendering */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  text-rendering: optimizeLegibility;
+}
+
+/* Remove font bouncing effect */
+html, body {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+/* Prevent layout shifts */
+* {
+  font-variation-settings: normal;
+}
+
+/* Smooth transitions for layout changes */
+.transition-sidebar {
+  transition-property: width, margin, padding;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+/* Apply consistent focus styles */
+:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Improved contrast for text on colored backgrounds */
+.text-on-primary {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.text-on-surface {
+  color: rgba(0, 0, 0, 0.87);
+}
+
+/* Prevent inconsistent button rendering */
+button, a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ensure consistent input heights across browsers */
+input, select, textarea {
+  line-height: 1.5;
+}
+
+/* Scrollbar styling for better UI */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Ensure proper mobile UI */
+@media (max-width: 768px) {
+  html {
+    font-size: 15px;
+  }
+  .responsive-table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .responsive-table th,
+  .responsive-table td {
+    white-space: nowrap;
+  }
+}
+
+/* Consistent shadow styles */
+.shadow-card {
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+.shadow-dropdown {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.shadow-modal {
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* Professional button variants */
+.btn-primary {
+  @apply bg-slate-700 text-white hover:bg-slate-600 focus:ring-2 focus:ring-slate-500 focus:ring-offset-2;
+}
+
+.btn-secondary {
+  @apply bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:ring-2 focus:ring-slate-500 focus:ring-offset-2;
+}
+
+.btn-accent {
+  @apply bg-blue-500 text-white hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+}
+
+.btn-danger {
+  @apply bg-red-500 text-white hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-2;
+}
+
+/* Improve table responsiveness */
+.responsive-table {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.responsive-table table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.responsive-table th,
+.responsive-table td {
+  padding: 0.75rem 0.5rem;
+  vertical-align: top;
+}
+
+/* Desktop table improvements */
+@media (min-width: 768px) {
+  .cases-page .responsive-table td {
+    height: 72px;
+    vertical-align: middle;
+  }
+  
+  .cases-page .responsive-table th:nth-child(1),
+  .cases-page .responsive-table td:nth-child(1) {
+    width: 15%;
+  }
+  
+  .cases-page .responsive-table th:nth-child(2),
+  .cases-page .responsive-table td:nth-child(2) {
+    width: 35%;
+  }
+  
+  .cases-page .responsive-table th:nth-child(3),
+  .cases-page .responsive-table td:nth-child(3) {
+    width: 15%;
+  }
+  
+  .cases-page .responsive-table th:nth-child(4),
+  .cases-page .responsive-table td:nth-child(4) {
+    width: 20%;
+  }
+  
+  .cases-page .responsive-table th:last-child,
+  .cases-page .responsive-table td:last-child {
+    width: 130px;
+    min-width: 130px;
+  }
+}
+
+/* Mobile improvements */
+@media (max-width: 767px) {
+  /* Mobile card view styling */
+  .cases-page .sm\:hidden > div {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .cases-page .sm\:hidden > div:active {
+    transform: scale(0.99);
+    box-shadow: none;
+  }
+}
+
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Mobile optimized padding and spacing */
+@media (max-width: 640px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.25rem; }
+  
+  .sm-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .sm-hide {
+    display: none;
+  }
+  
+  .sm-full {
+    width: 100%;
+  }
+  
+  /* Table improvements for very small screens */
+  .responsive-table th,
+  .responsive-table td {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  /* Improve action buttons on mobile */
+  .action-buttons {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    margin-bottom: -0.25rem;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Action buttons styling */
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.action-button {
+  @apply inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors 
+  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+  disabled:pointer-events-none disabled:opacity-50;
+}
+
+.action-button-primary {
+  @apply bg-blue-600 text-white hover:bg-blue-700 h-9 px-4 py-2;
+}
+
+.action-button-secondary {
+  @apply bg-slate-100 text-slate-900 hover:bg-slate-200 h-9 px-4 py-2;
+}
+
+.action-button-destructive {
+  @apply bg-red-600 text-white hover:bg-red-700 h-9 px-4 py-2;
+}
+
+.action-button-ghost {
+  @apply hover:bg-slate-100 hover:text-slate-900 h-9 px-4 py-2;
+}
+
+.action-button-icon {
+  @apply h-9 w-9 p-2 rounded-md;
+}
+
+.action-button-table {
+  @apply h-8 w-8 p-1.5 rounded-md;
 }

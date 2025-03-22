@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
-import { groupByDate, formatDateHeading, sortDatesDescending } from "@/lib/date-utils";
+import { groupByDate, formatDateHeading, sortDatesDescending, formatRelativeTime } from "@/lib/date-utils";
 import { SearchBar } from "@/components/search-bar";
 import { 
   AlertDialog, 
@@ -22,14 +22,21 @@ interface Upload {
   fileUrl: string;
   fileType: string;
   createdAt: Date;
+  userId?: string;
+  user?: {
+    id: string;
+    name: string;
+  };
 }
 
 interface CaseFilesProps {
   caseId: string;
   files: Upload[];
+  canUpload?: boolean;
+  currentUserId?: string;
 }
 
-export function CaseFiles({ caseId, files }: CaseFilesProps) {
+export function CaseFiles({ caseId, files, canUpload = true, currentUserId }: CaseFilesProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
@@ -42,7 +49,7 @@ export function CaseFiles({ caseId, files }: CaseFilesProps) {
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !canUpload) return;
 
     setLoading(true);
     setError(null);
@@ -77,12 +84,13 @@ export function CaseFiles({ caseId, files }: CaseFilesProps) {
   };
 
   const handleDelete = (fileId: string) => {
+    if (!canUpload) return; // Only allow deletion if user can upload
     setFileToDelete(fileId);
     setDeleteDialogOpen(true);
   };
 
   const confirmDelete = async () => {
-    if (!fileToDelete) return;
+    if (!fileToDelete || !canUpload) return;
     
     setDeleteLoading(true);
     try {
@@ -102,12 +110,15 @@ export function CaseFiles({ caseId, files }: CaseFilesProps) {
       console.error("Error deleting file:", error);
       setError(error instanceof Error ? error.message : "Error deleting file");
       // Keep the dialog open if there's an error
-      setDeleteLoading(false);
       return;
+    } finally {
+      setDeleteLoading(false);
+      setDeleteDialogOpen(false);
+      setFileToDelete(null);
     }
-    
-    // Only close dialog and reset state if successful
-    setDeleteLoading(false);
+  };
+
+  const cancelDelete = () => {
     setDeleteDialogOpen(false);
     setFileToDelete(null);
     setError(null);
@@ -132,35 +143,49 @@ export function CaseFiles({ caseId, files }: CaseFilesProps) {
   };
 
   // Render individual file item
-  const renderFileItem = (file: Upload) => (
-    <div key={file.id} className="relative group">
-      <a
-        href={file.fileUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center p-4 border border-slate-700 rounded-lg bg-slate-800 hover:bg-slate-700"
-      >
-        <span className="text-2xl mr-3">{getFileIcon(file.fileType)}</span>
-        <div className="overflow-hidden">
-          <p className="font-medium truncate text-slate-200">{file.fileName}</p>
-          <p className="text-xs text-slate-400">
-            {new Date(file.createdAt).toLocaleDateString()}
-          </p>
+  const renderFileItem = (file: Upload) => {
+    const fileIcon = getFileIcon(file.fileType);
+    
+    return (
+      <li key={file.id} className="border border-gray-300 rounded-lg p-4 bg-white dark:bg-gray-800 dark:border-gray-700 hover:shadow-md transition-shadow ease-in-out duration-200">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center">
+            <div className="mr-3 text-gray-400">
+              {fileIcon}
+            </div>
+            <div>
+              <a 
+                href={file.fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-blue-600 hover:underline dark:text-blue-400"
+              >
+                {file.fileName}
+              </a>
+              <div className="flex items-center mt-1 text-sm text-gray-500 dark:text-gray-400">
+                <span>
+                  {formatRelativeTime(file.createdAt)}
+                </span>
+              </div>
+            </div>
+          </div>
+          {canUpload && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleDelete(file.id);
+              }}
+              className="absolute top-2 right-2 p-1.5 rounded-full bg-slate-700 text-slate-400 hover:text-red-400 hover:bg-slate-600 opacity-0 group-hover:opacity-100 transition-opacity"
+              title="Delete file"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
         </div>
-      </a>
-      <button
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          handleDelete(file.id);
-        }}
-        className="absolute top-2 right-2 p-1.5 rounded-full bg-slate-700 text-slate-400 hover:text-red-400 hover:bg-slate-600 opacity-0 group-hover:opacity-100 transition-opacity"
-        title="Delete file"
-      >
-        <Trash2 className="h-4 w-4" />
-      </button>
-    </div>
-  );
+      </li>
+    );
+  };
 
   // Render files based on grouping preference
   const renderFiles = () => {
@@ -173,9 +198,9 @@ export function CaseFiles({ caseId, files }: CaseFilesProps) {
 
     if (!groupByDateEnabled) {
       return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {filteredFiles.map(file => renderFileItem(file))}
-        </div>
+        </ul>
       );
     }
 
@@ -184,13 +209,13 @@ export function CaseFiles({ caseId, files }: CaseFilesProps) {
     const sortedDates = sortDatesDescending(Object.keys(groupedFiles));
 
     return sortedDates.map(dateKey => (
-      <div key={dateKey} className="mb-6">
+      <div key={dateKey} className="mb-5">
         <h3 className="mb-2 px-2 py-1 text-sm font-medium text-slate-300 bg-slate-700 rounded">
           {formatDateHeading(dateKey)}
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pl-2">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 pl-0 sm:pl-2">
           {groupedFiles[dateKey].map(file => renderFileItem(file))}
-        </div>
+        </ul>
       </div>
     ));
   };
@@ -222,37 +247,42 @@ export function CaseFiles({ caseId, files }: CaseFilesProps) {
         />
       </div>
 
-      <div className="mb-6 rounded-lg border border-slate-700 bg-slate-800 p-4">
-        <div className="mb-4">
-          <label
-            htmlFor="file-upload"
-            className="block text-sm font-medium text-slate-300 mb-2"
-          >
-            Upload File (PDF, Images)
-          </label>
-          <input
-            id="file-upload"
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileUpload}
-            disabled={loading}
-            className="block w-full text-sm border border-slate-700 bg-slate-900 text-slate-200 rounded-md cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-900 file:text-blue-200 hover:file:bg-blue-800"
-            accept=".pdf,.jpg,.jpeg,.png"
-          />
-        </div>
-
-        {loading && (
-          <div className="text-sm text-blue-400 animate-pulse">
-            Uploading file...
+      {/* Only show upload section if user has permission */}
+      {canUpload && (
+        <div className="mb-6 rounded-lg border border-slate-700 bg-slate-800 p-3 sm:p-4">
+          <div className="mb-4">
+            <label
+              htmlFor="file-upload"
+              className="block text-sm font-medium text-slate-300 mb-2"
+            >
+              Upload File (PDF, Images)
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              disabled={loading}
+              className="block w-full text-sm border border-slate-700 bg-slate-900 text-slate-200 rounded-md cursor-pointer file:mr-4 file:py-2 file:px-3 sm:file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-900 file:text-blue-200 hover:file:bg-blue-800"
+              accept=".pdf,.jpg,.jpeg,.png"
+            />
           </div>
-        )}
 
-        {error && (
-          <div className="text-sm text-red-400 mt-2">{error}</div>
-        )}
-      </div>
+          {loading && (
+            <div className="text-sm text-blue-400 animate-pulse">
+              Uploading file...
+            </div>
+          )}
 
-      <div className="space-y-4">
+          {error && (
+            <div className="text-sm text-red-400 mt-2">
+              {error}
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="mt-4">
         {renderFiles()}
       </div>
 
@@ -264,16 +294,9 @@ export function CaseFiles({ caseId, files }: CaseFilesProps) {
               Are you sure you want to delete this file? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          
-          {error && (
-            <div className="mt-4 p-3 bg-red-900/50 border border-red-700 rounded-md">
-              <p className="text-sm text-red-300">{error}</p>
-            </div>
-          )}
-          
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteLoading}>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogCancel onClick={cancelDelete} disabled={deleteLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
               onClick={confirmDelete}
               disabled={deleteLoading}
               className="bg-red-600 hover:bg-red-700"

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
 export async function PATCH(
@@ -25,7 +25,7 @@ export async function PATCH(
     }
 
     const taskId = params.taskId;
-    
+
     // First, get the task to check permissions
     const task = await prisma.task.findUnique({
       where: { id: taskId },
@@ -33,19 +33,16 @@ export async function PATCH(
         case: true,
       },
     });
-    
+
     if (!task) {
-      return NextResponse.json(
-        { error: "Task not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Task not found" }, { status: 404 });
     }
-    
+
     // Check if user has permission to update this task
     const userId = session.user.id as string;
     const isAdmin = session.user.role === "ADMIN";
     const isCaseOwner = task.case.userId === userId;
-    
+
     if (!isAdmin && !isCaseOwner) {
       return NextResponse.json(
         { error: "You don't have permission to update this task" },
@@ -83,7 +80,7 @@ export async function DELETE(
     }
 
     const taskId = params.taskId;
-    
+
     // First, get the task to check permissions
     const task = await prisma.task.findUnique({
       where: { id: taskId },
@@ -91,19 +88,16 @@ export async function DELETE(
         case: true,
       },
     });
-    
+
     if (!task) {
-      return NextResponse.json(
-        { error: "Task not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Task not found" }, { status: 404 });
     }
-    
+
     // Check if user has permission to delete this task
     const userId = session.user.id as string;
     const isAdmin = session.user.role === "ADMIN";
     const isCaseOwner = task.case.userId === userId;
-    
+
     if (!isAdmin && !isCaseOwner) {
       return NextResponse.json(
         { error: "You don't have permission to delete this task" },
@@ -124,4 +118,4 @@ export async function DELETE(
       { status: 500 }
     );
   }
-} 
+}

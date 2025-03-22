@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { supabaseAdmin, initializeStorage } from "@/lib/supabase";
 
@@ -111,6 +111,7 @@ export async function POST(
         fileUrl: publicURLData.publicUrl,
         fileType: file.type,
         caseId,
+        userId: session.user.id
       },
     });
 

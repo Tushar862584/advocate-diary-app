@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { supabaseAdmin } from "@/lib/supabase";
 
@@ -11,10 +11,7 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const uploadId = params.uploadId;
@@ -34,10 +31,7 @@ export async function DELETE(
     });
 
     if (!upload) {
-      return NextResponse.json(
-        { error: "File not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "File not found" }, { status: 404 });
     }
 
     // Check if user owns the case that contains this file
@@ -55,13 +49,13 @@ export async function DELETE(
     // Extract the filename from the URL
     // URLs are in the format: https://<domain>/storage/v1/object/public/case-files/<caseId>/<filename>
     const fileUrl = upload.fileUrl;
-    
+
     // Log the URL for debugging
     console.log("File URL:", fileUrl);
-    
+
     // Extract the path after case-files/
     const pathMatch = fileUrl.match(/case-files\/([^?#]+)/);
-    
+
     if (!pathMatch) {
       console.error("Failed to extract file path from URL:", fileUrl);
       // If we can't parse the URL, we'll still delete the database record
@@ -70,13 +64,13 @@ export async function DELETE(
       });
       return NextResponse.json({ success: true });
     }
-    
+
     const filePath = pathMatch[1];
     console.log("Deleting file path:", filePath);
 
     // Delete the file from Supabase Storage
     const { error: deleteError } = await supabaseAdmin.storage
-      .from('case-files')
+      .from("case-files")
       .remove([filePath]);
 
     if (deleteError) {
@@ -97,4 +91,4 @@ export async function DELETE(
       { status: 500 }
     );
   }
-} 
+}

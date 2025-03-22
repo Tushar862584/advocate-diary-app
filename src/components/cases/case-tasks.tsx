@@ -115,6 +115,11 @@ export function CaseTasks({ caseId, tasks }: CaseTasksProps) {
     }
   };
 
+  const cancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setTaskToDelete(null);
+  };
+
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query.toLowerCase());
   }, []);
@@ -258,7 +263,7 @@ export function CaseTasks({ caseId, tasks }: CaseTasksProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={cancelDelete} disabled={deleteLoading}>Cancel</AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmDelete}
               disabled={deleteLoading}

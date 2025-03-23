@@ -103,7 +103,7 @@ export default async function CasesPage() {
   return (
     <div className="cases-page">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-slate-100">Your Cases</h1>
+        <h1 className="text-2xl font-bold text-slate-700">Your Cases</h1>
         <Link
           href="/cases/new"
           className="flex items-center gap-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"

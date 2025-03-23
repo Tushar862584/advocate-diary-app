@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -13,48 +14,69 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { CaseTransferForm } from "@/components/admin/CaseTransferForm";
 import { UserCaseLoadsTable } from "@/components/admin/UserCaseLoadsTable";
 
+// Create a context for managing refresh state across components
+const RefreshContext = createContext<{
+  refreshKey: number;
+  triggerRefresh: () => void;
+}>({
+  refreshKey: 0,
+  triggerRefresh: () => {},
+});
+
 export default function AdminCasesPage() {
+  const router = useRouter();
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const triggerRefresh = () => {
+    // Increment the refresh key to cause a re-render
+    setRefreshKey((prev) => prev + 1);
+    // Also refresh any server components
+    router.refresh();
+  };
+
   return (
-    <div className="container mx-auto py-8 space-y-8">
-      <div className="flex flex-col space-y-2">
-        <h1 className="text-3xl font-bold text-slate-800">Case Management</h1>
-        <p className="text-slate-500">
-          Manage case assignments and transfers between users
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
-          <Card className="shadow-md border-slate-200">
-            <CardHeader className="bg-slate-50 border-b border-slate-200">
-              <CardTitle className="text-slate-800">Transfer Cases</CardTitle>
-              <CardDescription className="text-slate-500">
-                Transfer all cases from one user to another
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <CaseTransferFormContainer />
-            </CardContent>
-          </Card>
+    <RefreshContext.Provider value={{ refreshKey, triggerRefresh }}>
+      <div className="container mx-auto py-8 space-y-8">
+        <div className="flex flex-col space-y-2">
+          <h1 className="text-3xl font-bold text-slate-800">Case Management</h1>
+          <p className="text-slate-500">
+            Manage case assignments and transfers between users
+          </p>
         </div>
 
-        <div className="lg:col-span-1">
-          <Card className="shadow-md border-slate-200 h-full">
-            <CardHeader className="bg-slate-50 border-b border-slate-200">
-              <CardTitle className="text-slate-800">
-                Case Load Summary
-              </CardTitle>
-              <CardDescription className="text-slate-500">
-                Number of cases assigned to each user
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <UserCaseLoadsContainer />
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <Card className="shadow-md border-slate-200">
+              <CardHeader className="bg-slate-50 border-b border-slate-200">
+                <CardTitle className="text-slate-800">Transfer Cases</CardTitle>
+                <CardDescription className="text-slate-500">
+                  Transfer all cases from one user to another
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <CaseTransferFormContainer />
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="lg:col-span-1">
+            <Card className="shadow-md border-slate-200 h-full">
+              <CardHeader className="bg-slate-50 border-b border-slate-200">
+                <CardTitle className="text-slate-800">
+                  Case Load Summary
+                </CardTitle>
+                <CardDescription className="text-slate-500">
+                  Number of cases assigned to each user
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <UserCaseLoadsContainer />
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
-    </div>
+    </RefreshContext.Provider>
   );
 }
 
@@ -69,6 +91,7 @@ function LoadingState() {
 }
 
 function CaseTransferFormContainer() {
+  const { refreshKey, triggerRefresh } = useContext(RefreshContext);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [users, setUsers] = useState<any[]>([]);
@@ -93,7 +116,7 @@ function CaseTransferFormContainer() {
     };
 
     fetchUsers();
-  }, []);
+  }, [refreshKey]);
 
   if (isLoading) {
     return <LoadingState />;
@@ -115,10 +138,11 @@ function CaseTransferFormContainer() {
     );
   }
 
-  return <CaseTransferForm users={users} />;
+  return <CaseTransferForm users={users} onSuccess={triggerRefresh} />;
 }
 
 function UserCaseLoadsContainer() {
+  const { refreshKey } = useContext(RefreshContext);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [users, setUsers] = useState<any[]>([]);
@@ -143,7 +167,7 @@ function UserCaseLoadsContainer() {
     };
 
     fetchUsers();
-  }, []);
+  }, [refreshKey]);
 
   if (isLoading) {
     return <LoadingState />;

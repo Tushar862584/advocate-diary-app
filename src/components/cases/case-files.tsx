@@ -160,20 +160,22 @@ export function CaseFiles({
     return (
       <li
         key={file.id}
-        className="border border-gray-300 rounded-lg p-4 bg-white dark:bg-gray-800 dark:border-gray-700 hover:shadow-md transition-shadow ease-in-out duration-200 group relative"
+        className="border border-gray-400 rounded-lg p-4 bg-gray-100 dark:bg-gray-800 dark:border-gray-700 hover:shadow-md transition-shadow ease-in-out duration-200 group relative"
       >
         <div className="flex items-start">
-          <div className="flex-shrink-0 mr-3 text-gray-400">{fileIcon}</div>
+          <div className="flex-shrink-0 mr-3 text-gray-600 dark:text-gray-400">
+            {fileIcon}
+          </div>
           <div className="flex-grow">
             <a
               href={file.fileUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-medium text-blue-600 hover:underline dark:text-blue-400"
+              className="font-medium text-blue-800 hover:underline dark:text-blue-400"
             >
               {file.fileName}
             </a>
-            <div className="flex items-center mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex items-center mt-1 text-sm text-gray-700 dark:text-gray-400">
               <span>{formatRelativeTime(file.createdAt)}</span>
             </div>
           </div>
@@ -185,7 +187,8 @@ export function CaseFiles({
                 e.stopPropagation();
                 handleDelete(file.id);
               }}
-              className="p-1.5 rounded-full bg-slate-700 text-slate-400 hover:text-red-400 hover:bg-slate-600 opacity-0 group-hover:opacity-100 transition-opacity ml-2 flex-shrink-0"
+              // Make delete button always visible on mobile with slightly darker bg
+              className="p-1.5 rounded-full bg-gray-300 text-gray-700 hover:text-red-600 hover:bg-red-100 opacity-100 sm:opacity-70 sm:group-hover:opacity-100 transition-opacity ml-2 flex-shrink-0 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-red-900 dark:hover:text-red-400"
               title="Delete file"
             >
               <Trash2 className="h-4 w-4" />
@@ -201,12 +204,16 @@ export function CaseFiles({
     if (filteredFiles.length === 0) {
       if (searchQuery) {
         return (
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             No files match your search query.
           </p>
         );
       }
-      return <p className="text-sm text-slate-400">No files uploaded yet.</p>;
+      return (
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          No files uploaded yet.
+        </p>
+      );
     }
 
     if (!groupByDateEnabled) {
@@ -223,7 +230,7 @@ export function CaseFiles({
 
     return sortedDates.map((dateKey) => (
       <div key={dateKey} className="mb-5">
-        <h3 className="mb-2 px-2 py-1 text-sm font-medium text-slate-300 bg-slate-700 rounded">
+        <h3 className="mb-2 px-3 py-1.5 text-sm font-medium text-gray-100 bg-slate-900 rounded dark:text-gray-200 dark:bg-slate-800">
           {formatDateHeading(dateKey)}
         </h3>
         <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 pl-0 sm:pl-2">
@@ -234,17 +241,21 @@ export function CaseFiles({
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-slate-100">
+    <div className="bg-gray-50 p-4 rounded-lg dark:bg-gray-900">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+        <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
           Case Files & Documents
         </h2>
         <div className="flex items-center">
           <label className="flex items-center cursor-pointer">
-            <span className="mr-2 text-sm text-slate-300">Group by date</span>
+            <span className="mr-2 text-sm font-medium text-gray-800 dark:text-gray-300">
+              Group by date
+            </span>
             <div
               className={`relative inline-block w-10 h-5 rounded-full transition-colors ${
-                groupByDateEnabled ? "bg-blue-600" : "bg-slate-600"
+                groupByDateEnabled
+                  ? "bg-blue-700"
+                  : "bg-gray-500 dark:bg-gray-600"
               }`}
             >
               <input
@@ -267,13 +278,13 @@ export function CaseFiles({
         <SearchBar onSearch={handleSearch} placeholder="Search files..." />
       </div>
 
-      {/* Only show upload section if user has permission */}
+      {/* Update upload section with darker background */}
       {canUpload && (
-        <div className="mb-6 rounded-lg border border-slate-700 bg-slate-800 p-3 sm:p-4">
+        <div className="mb-6 rounded-lg border border-gray-400 bg-gray-200 p-3 sm:p-4 dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-4">
             <label
               htmlFor="file-upload"
-              className="block text-sm font-medium text-slate-300 mb-2"
+              className="block text-sm font-medium text-gray-800 dark:text-gray-300 mb-2"
             >
               Upload File (PDF, Images)
             </label>
@@ -283,40 +294,50 @@ export function CaseFiles({
               ref={fileInputRef}
               onChange={handleFileUpload}
               disabled={loading}
-              className="block w-full text-sm border border-slate-700 bg-slate-900 text-slate-200 rounded-md cursor-pointer file:mr-4 file:py-2 file:px-3 sm:file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-900 file:text-blue-200 hover:file:bg-blue-800"
+              className="block w-full text-sm border border-gray-400 bg-gray-100 text-gray-800 rounded-md cursor-pointer file:mr-4 file:py-2 file:px-3 sm:file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-800 file:text-white hover:file:bg-blue-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
               accept=".pdf,.jpg,.jpeg,.png"
             />
           </div>
 
           {loading && (
-            <div className="text-sm text-blue-400 animate-pulse">
+            <div className="text-sm text-blue-800 dark:text-blue-400 animate-pulse">
               Uploading file...
             </div>
           )}
 
-          {error && <div className="text-sm text-red-400 mt-2">{error}</div>}
+          {error && (
+            <div className="text-sm text-red-700 dark:text-red-400 mt-2">
+              {error}
+            </div>
+          )}
         </div>
       )}
 
       <div className="mt-4">{renderFiles()}</div>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="dark:bg-gray-800 dark:border-gray-700">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete File</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="dark:text-gray-100">
+              Delete File
+            </AlertDialogTitle>
+            <AlertDialogDescription className="dark:text-gray-300">
               Are you sure you want to delete this file? This action cannot be
               undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={cancelDelete} disabled={deleteLoading}>
+            <AlertDialogCancel
+              onClick={cancelDelete}
+              disabled={deleteLoading}
+              className="dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+            >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               disabled={deleteLoading}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
             >
               {deleteLoading ? "Deleting..." : "Delete"}
             </AlertDialogAction>

@@ -92,91 +92,135 @@ export default async function CaseDetailPage({
   const canEdit = isAdmin || isOwner;
 
   return (
-    <div>
+    <div className="bg-slate-50">
       <div className="mb-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-100 p-4 rounded-lg border border-slate-200 shadow-sm">
           <div>
             <Link
               href="/cases"
-              className="text-sm text-blue-600 hover:underline"
+              className="text-sm text-blue-700 hover:underline flex items-center"
             >
-              ← Back to Cases
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 mr-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Back to Cases
             </Link>
-            <h1 className="mt-2 text-2xl font-bold">
+            <h1 className="mt-2 text-2xl font-bold text-slate-800">
               {caseDetail.caseType}/{caseDetail.registrationNum} -{" "}
               {caseDetail.title}
             </h1>
           </div>
 
-          <div>
+          <div className="flex-shrink-0">
             {(isAdmin || isOwner) && (
               <Link
                 href={`/cases/${caseId}/edit`}
-                className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                className="inline-flex items-center justify-center rounded-md bg-blue-700 px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base font-medium text-white hover:bg-blue-800 transition-colors whitespace-nowrap shadow-sm"
               >
-                Edit Case
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="w-4 h-4 mr-1 xs:mr-2"
+                >
+                  <path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z" />
+                  <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z" />
+                </svg>
+                <span className="hidden xs:inline">Edit Case</span>
+                <span className="xs:hidden">Edit</span>
               </Link>
             )}
           </div>
         </div>
 
-        <div className="mt-4 rounded-lg border bg-white p-4">
-          <h2 className="mb-4 text-lg font-bold">Case Details</h2>
+        <div className="mt-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="mb-4 text-lg font-bold text-slate-800">
+            Case Details
+          </h2>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <p className="text-sm text-gray-500">Case Type</p>
-              <p>{caseDetail.caseType}</p>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="bg-slate-50 p-3 rounded-md">
+              <p className="text-sm font-medium text-slate-500 mb-1">
+                Case Type
+              </p>
+              <p className="text-slate-800">{caseDetail.caseType}</p>
             </div>
 
-            <div>
-              <p className="text-sm text-gray-500">Registration Number</p>
-              <p>
+            <div className="bg-slate-50 p-3 rounded-md">
+              <p className="text-sm font-medium text-slate-500 mb-1">
+                Registration Number
+              </p>
+              <p className="text-slate-800">
                 {caseDetail.registrationYear}/{caseDetail.registrationNum}
               </p>
             </div>
 
-            <div>
-              <p className="text-sm text-gray-500">Court</p>
-              <p>{caseDetail.courtName}</p>
+            <div className="bg-slate-50 p-3 rounded-md">
+              <p className="text-sm font-medium text-slate-500 mb-1">Court</p>
+              <p className="text-slate-800">{caseDetail.courtName}</p>
             </div>
 
-            <div>
-              <p className="text-sm text-gray-500">Filed By</p>
-              <p>{caseDetail.user?.name || "Not assigned"}</p>
+            <div className="bg-slate-50 p-3 rounded-md">
+              <p className="text-sm font-medium text-slate-500 mb-1">
+                Filed By
+              </p>
+              <p className="text-slate-800">
+                {caseDetail.user?.name || "Not assigned"}
+              </p>
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <p className="text-sm text-gray-500">Petitioners</p>
-              <ul className="list-inside list-disc">
+          <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="bg-slate-50 p-4 rounded-md">
+              <p className="text-sm font-medium text-slate-500 mb-2">
+                Petitioners
+              </p>
+              <ul className="space-y-2">
                 {petitioners.map((petitioner) => (
-                  <li key={petitioner.id}>
-                    {petitioner.name}
-                    {petitioner.advocate && (
-                      <span className="text-sm text-gray-500">
-                        {" "}
-                        (Adv: {petitioner.advocate})
+                  <li key={petitioner.id} className="flex items-baseline">
+                    <span className="text-blue-700 mr-2">•</span>
+                    <div>
+                      <span className="text-slate-800 font-medium">
+                        {petitioner.name}
                       </span>
-                    )}
+                      {petitioner.advocate && (
+                        <span className="block text-sm text-slate-500 mt-0.5">
+                          Advocate: {petitioner.advocate}
+                        </span>
+                      )}
+                    </div>
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div>
-              <p className="text-sm text-gray-500">Respondents</p>
-              <ul className="list-inside list-disc">
+            <div className="bg-slate-50 p-4 rounded-md">
+              <p className="text-sm font-medium text-slate-500 mb-2">
+                Respondents
+              </p>
+              <ul className="space-y-2">
                 {respondents.map((respondent) => (
-                  <li key={respondent.id}>
-                    {respondent.name}
-                    {respondent.advocate && (
-                      <span className="text-sm text-gray-500">
-                        {" "}
-                        (Adv: {respondent.advocate})
+                  <li key={respondent.id} className="flex items-baseline">
+                    <span className="text-blue-700 mr-2">•</span>
+                    <div>
+                      <span className="text-slate-800 font-medium">
+                        {respondent.name}
                       </span>
-                    )}
+                      {respondent.advocate && (
+                        <span className="block text-sm text-slate-500 mt-0.5">
+                          Advocate: {respondent.advocate}
+                        </span>
+                      )}
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -187,39 +231,43 @@ export default async function CaseDetailPage({
 
       {/* Case Assignment Section - Only visible to admins */}
       {isAdmin && (
-        <CaseAssignment
-          caseId={caseId}
-          currentUserId={caseDetail.userId}
-          currentUserName={caseDetail.user?.name || null}
-          isAdmin={isAdmin}
-        />
+        <div className="mb-6 bg-white rounded-lg border border-slate-200 p-5 shadow-sm">
+          <CaseAssignment
+            caseId={caseId}
+            currentUserId={caseDetail.userId}
+            currentUserName={caseDetail.user?.name || null}
+            isAdmin={isAdmin}
+          />
+        </div>
       )}
 
       {/* Replace the old tabs and sections with the new CaseTabs component */}
-      <CaseTabs
-        caseId={caseId}
-        hearingsComponent={
-          <CaseHearings
-            caseId={caseId}
-            hearings={formattedHearings}
-            canEdit={canEdit}
-          />
-        }
-        notesComponent={
-          <CaseNotes
-            caseId={caseId}
-            notes={caseDetail.notes}
-            canAdd={canEdit}
-          />
-        }
-        filesComponent={
-          <CaseFiles
-            caseId={caseId}
-            files={caseDetail.uploads}
-            canUpload={canEdit}
-          />
-        }
-      />
+      <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-1">
+        <CaseTabs
+          caseId={caseId}
+          hearingsComponent={
+            <CaseHearings
+              caseId={caseId}
+              hearings={formattedHearings}
+              canEdit={canEdit}
+            />
+          }
+          notesComponent={
+            <CaseNotes
+              caseId={caseId}
+              notes={caseDetail.notes}
+              canAdd={canEdit}
+            />
+          }
+          filesComponent={
+            <CaseFiles
+              caseId={caseId}
+              files={caseDetail.uploads}
+              canUpload={canEdit}
+            />
+          }
+        />
+      </div>
     </div>
   );
 }

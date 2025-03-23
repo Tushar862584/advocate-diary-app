@@ -3,17 +3,22 @@
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
-import { groupByDate, formatDateHeading, sortDatesDescending, formatRelativeTime } from "@/lib/date-utils";
+import {
+  groupByDate,
+  formatDateHeading,
+  sortDatesDescending,
+  formatRelativeTime,
+} from "@/lib/date-utils";
 import { SearchBar } from "@/components/search-bar";
-import { 
-  AlertDialog, 
-  AlertDialogContent, 
-  AlertDialogHeader, 
-  AlertDialogTitle, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogCancel, 
-  AlertDialogAction 
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 
 interface Upload {
@@ -36,7 +41,12 @@ interface CaseFilesProps {
   currentUserId?: string;
 }
 
-export function CaseFiles({ caseId, files, canUpload = true, currentUserId }: CaseFilesProps) {
+export function CaseFiles({
+  caseId,
+  files,
+  canUpload = true,
+  currentUserId,
+}: CaseFilesProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
@@ -91,7 +101,7 @@ export function CaseFiles({ caseId, files, canUpload = true, currentUserId }: Ca
 
   const confirmDelete = async () => {
     if (!fileToDelete || !canUpload) return;
-    
+
     setDeleteLoading(true);
     try {
       const response = await fetch(`/api/uploads/${fileToDelete}`, {
@@ -129,10 +139,11 @@ export function CaseFiles({ caseId, files, canUpload = true, currentUserId }: Ca
   }, []);
 
   // Filter files based on search query
-  const filteredFiles = files.filter(file => 
-    !searchQuery || 
-    file.fileName.toLowerCase().includes(searchQuery) ||
-    file.fileType.toLowerCase().includes(searchQuery)
+  const filteredFiles = files.filter(
+    (file) =>
+      !searchQuery ||
+      file.fileName.toLowerCase().includes(searchQuery) ||
+      file.fileType.toLowerCase().includes(searchQuery)
   );
 
   // Helper function to get proper file icon based on type
@@ -145,30 +156,28 @@ export function CaseFiles({ caseId, files, canUpload = true, currentUserId }: Ca
   // Render individual file item
   const renderFileItem = (file: Upload) => {
     const fileIcon = getFileIcon(file.fileType);
-    
+
     return (
-      <li key={file.id} className="border border-gray-300 rounded-lg p-4 bg-white dark:bg-gray-800 dark:border-gray-700 hover:shadow-md transition-shadow ease-in-out duration-200">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center">
-            <div className="mr-3 text-gray-400">
-              {fileIcon}
-            </div>
-            <div>
-              <a 
-                href={file.fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium text-blue-600 hover:underline dark:text-blue-400"
-              >
-                {file.fileName}
-              </a>
-              <div className="flex items-center mt-1 text-sm text-gray-500 dark:text-gray-400">
-                <span>
-                  {formatRelativeTime(file.createdAt)}
-                </span>
-              </div>
+      <li
+        key={file.id}
+        className="border border-gray-300 rounded-lg p-4 bg-white dark:bg-gray-800 dark:border-gray-700 hover:shadow-md transition-shadow ease-in-out duration-200 group relative"
+      >
+        <div className="flex items-start">
+          <div className="flex-shrink-0 mr-3 text-gray-400">{fileIcon}</div>
+          <div className="flex-grow">
+            <a
+              href={file.fileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-blue-600 hover:underline dark:text-blue-400"
+            >
+              {file.fileName}
+            </a>
+            <div className="flex items-center mt-1 text-sm text-gray-500 dark:text-gray-400">
+              <span>{formatRelativeTime(file.createdAt)}</span>
             </div>
           </div>
+
           {canUpload && (
             <button
               onClick={(e) => {
@@ -176,7 +185,7 @@ export function CaseFiles({ caseId, files, canUpload = true, currentUserId }: Ca
                 e.stopPropagation();
                 handleDelete(file.id);
               }}
-              className="absolute top-2 right-2 p-1.5 rounded-full bg-slate-700 text-slate-400 hover:text-red-400 hover:bg-slate-600 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="p-1.5 rounded-full bg-slate-700 text-slate-400 hover:text-red-400 hover:bg-slate-600 opacity-0 group-hover:opacity-100 transition-opacity ml-2 flex-shrink-0"
               title="Delete file"
             >
               <Trash2 className="h-4 w-4" />
@@ -191,7 +200,11 @@ export function CaseFiles({ caseId, files, canUpload = true, currentUserId }: Ca
   const renderFiles = () => {
     if (filteredFiles.length === 0) {
       if (searchQuery) {
-        return <p className="text-sm text-slate-400">No files match your search query.</p>;
+        return (
+          <p className="text-sm text-slate-400">
+            No files match your search query.
+          </p>
+        );
       }
       return <p className="text-sm text-slate-400">No files uploaded yet.</p>;
     }
@@ -199,22 +212,22 @@ export function CaseFiles({ caseId, files, canUpload = true, currentUserId }: Ca
     if (!groupByDateEnabled) {
       return (
         <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {filteredFiles.map(file => renderFileItem(file))}
+          {filteredFiles.map((file) => renderFileItem(file))}
         </ul>
       );
     }
 
     // Group files by date
-    const groupedFiles = groupByDate(filteredFiles, 'createdAt');
+    const groupedFiles = groupByDate(filteredFiles, "createdAt");
     const sortedDates = sortDatesDescending(Object.keys(groupedFiles));
 
-    return sortedDates.map(dateKey => (
+    return sortedDates.map((dateKey) => (
       <div key={dateKey} className="mb-5">
         <h3 className="mb-2 px-2 py-1 text-sm font-medium text-slate-300 bg-slate-700 rounded">
           {formatDateHeading(dateKey)}
         </h3>
         <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 pl-0 sm:pl-2">
-          {groupedFiles[dateKey].map(file => renderFileItem(file))}
+          {groupedFiles[dateKey].map((file) => renderFileItem(file))}
         </ul>
       </div>
     ));
@@ -223,28 +236,35 @@ export function CaseFiles({ caseId, files, canUpload = true, currentUserId }: Ca
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-slate-100">Case Files & Documents</h2>
+        <h2 className="text-lg font-bold text-slate-100">
+          Case Files & Documents
+        </h2>
         <div className="flex items-center">
           <label className="flex items-center cursor-pointer">
             <span className="mr-2 text-sm text-slate-300">Group by date</span>
-            <div className={`relative inline-block w-10 h-5 rounded-full transition-colors ${groupByDateEnabled ? 'bg-blue-600' : 'bg-slate-600'}`}>
+            <div
+              className={`relative inline-block w-10 h-5 rounded-full transition-colors ${
+                groupByDateEnabled ? "bg-blue-600" : "bg-slate-600"
+              }`}
+            >
               <input
                 type="checkbox"
                 className="opacity-0 w-0 h-0"
                 checked={groupByDateEnabled}
                 onChange={() => setGroupByDateEnabled(!groupByDateEnabled)}
               />
-              <span className={`absolute left-1 top-1 w-3 h-3 rounded-full bg-white transition-transform ${groupByDateEnabled ? 'transform translate-x-5' : ''}`}></span>
+              <span
+                className={`absolute left-1 top-1 w-3 h-3 rounded-full bg-white transition-transform ${
+                  groupByDateEnabled ? "transform translate-x-5" : ""
+                }`}
+              ></span>
             </div>
           </label>
         </div>
       </div>
 
       <div className="mb-4">
-        <SearchBar 
-          onSearch={handleSearch} 
-          placeholder="Search files..." 
-        />
+        <SearchBar onSearch={handleSearch} placeholder="Search files..." />
       </div>
 
       {/* Only show upload section if user has permission */}
@@ -274,28 +294,25 @@ export function CaseFiles({ caseId, files, canUpload = true, currentUserId }: Ca
             </div>
           )}
 
-          {error && (
-            <div className="text-sm text-red-400 mt-2">
-              {error}
-            </div>
-          )}
+          {error && <div className="text-sm text-red-400 mt-2">{error}</div>}
         </div>
       )}
 
-      <div className="mt-4">
-        {renderFiles()}
-      </div>
+      <div className="mt-4">{renderFiles()}</div>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete File</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this file? This action cannot be undone.
+              Are you sure you want to delete this file? This action cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={cancelDelete} disabled={deleteLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={cancelDelete} disabled={deleteLoading}>
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               disabled={deleteLoading}
@@ -308,4 +325,4 @@ export function CaseFiles({ caseId, files, canUpload = true, currentUserId }: Ca
       </AlertDialog>
     </div>
   );
-} 
+}

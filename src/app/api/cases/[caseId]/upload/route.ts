@@ -23,7 +23,7 @@ export async function POST(
 ) {
   try {
     // Extract caseId from params
-    const { caseId } = params;
+    const { caseId } = await params;
     
     // Get the authenticated user
     const session = await getServerSession(authOptions);

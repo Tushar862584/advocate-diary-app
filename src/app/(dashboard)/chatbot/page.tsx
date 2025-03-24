@@ -67,6 +67,16 @@ export default function ChatbotPage() {
       return "I can help you with managing cases, scheduling hearings, understanding legal procedures, and navigating this application. What specific assistance do you need?";
     }
 
+    if (lowercaseInput.includes("section") && lowercaseInput.includes("415")) {
+      return `
+        Union of India - Section
+        Section 415 in The Indian Penal Code, 1860
+        415. Cheating.—
+        Whoever, by deceiving any person, fraudulently or dishonestly induces the person so deceived to deliver any property to any person, or to consent that any person shall retain any property, or intentionally induces the person so deceived to do or omit to do anything which he would not do or omit if he were not so deceived, and which act or omission causes or is likely to cause damage or harm to that person in body, mind, reputation or property, is said to “cheat”.
+        Explanation.— A dishonest concealment of facts is a deception within the meaning of this section.
+      `;
+    }
+
     return (
       'I understand your query about "' +
       userInput +

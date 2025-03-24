@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth";
 import DeleteCaseButton from "@/components/cases/delete-case-button";
 import CaseAssignButton from "@/components/case/CaseAssignButton";
 import { Eye, Edit, Plus, Calendar } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 // Define types for the case objects
 interface Case {
@@ -83,6 +84,7 @@ export default async function CasesPage() {
     },
   });
 
+// make the admin thing work i want  delete buttton to be visible if only isAdmin
   // Format the next hearing date if available
   const getNextHearingDate = (caseItem: Case) => {
     if (
@@ -104,13 +106,15 @@ export default async function CasesPage() {
     <div className="cases-page">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-slate-700">Your Cases</h1>
-        <Link
-          href="/cases/new"
-          className="flex items-center gap-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
-        >
-          <Plus className="h-4 w-4" />{" "}
-          <span className="hidden sm:inline">New Case</span>
-        </Link>
+        {isAdmin && (
+          <Link
+            href="/cases/new"
+            className="flex items-center gap-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
+          >
+            <Plus className="h-4 w-4" />{" "}
+            <span className="hidden sm:inline">New Case</span>
+          </Link>
+        )}
       </div>
 
       {/* Desktop Layout */}
@@ -202,6 +206,7 @@ export default async function CasesPage() {
                       >
                         <Eye className="h-4 w-4" />
                       </Link>
+                      {isAdmin && (
                       <Link
                         href={`/cases/${caseItem.id}/edit`}
                         className="inline-flex items-center justify-center rounded-md p-1.5 text-amber-400 hover:bg-slate-700 hover:text-amber-300 border border-transparent hover:border-amber-600"
@@ -210,18 +215,21 @@ export default async function CasesPage() {
                       >
                         <Edit className="h-4 w-4" />
                       </Link>
+                      )}
                       {isAdmin && (
                         <CaseAssignButton
                           caseId={caseItem.id}
                           isAssigned={Boolean(caseItem.userId)}
                         />
                       )}
+                      {isAdmin && (
                       <DeleteCaseButton
                         caseId={caseItem.id}
                         isOwner={
                           caseItem.userId === session.user?.id || isAdmin
                         }
                       />
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -281,18 +289,21 @@ export default async function CasesPage() {
                   <span className="text-xs">View</span>
                 </Link>
 
+                
+                {isAdmin && (
                 <Link
-                  href={`/cases/${caseItem.id}/edit`}
-                  className="flex justify-center items-center py-2 rounded-md text-amber-400 hover:bg-slate-700 hover:text-amber-300 border border-slate-700"
-                  prefetch={false}
+                    href={`/cases/${caseItem.id}/edit`}
+                    className="flex justify-center items-center py-2 rounded-md text-amber-400 hover:bg-slate-700 hover:text-amber-300 border border-slate-700"
+                    prefetch={false}
                 >
                   <Edit className="h-4 w-4 mr-1" />
                   <span className="text-xs">Edit</span>
                 </Link>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-1">
-                {isAdmin ? (
+                {isAdmin && (
                   <>
                     <CaseAssignButton
                       caseId={caseItem.id}
@@ -303,13 +314,6 @@ export default async function CasesPage() {
                       isOwner={caseItem.userId === session.user?.id || isAdmin}
                     />
                   </>
-                ) : (
-                  <div className="col-span-2">
-                    <DeleteCaseButton
-                      caseId={caseItem.id}
-                      isOwner={caseItem.userId === session.user?.id || isAdmin}
-                    />
-                  </div>
                 )}
               </div>
             </div>

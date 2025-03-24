@@ -121,7 +121,7 @@ export default async function CaseDetailPage({
           </div>
 
           <div className="flex-shrink-0">
-            {(isAdmin || isOwner) && (
+            {isAdmin && (
               <Link
                 href={`/cases/${caseId}/edit`}
                 className="inline-flex items-center justify-center rounded-md bg-blue-700 px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base font-medium text-white hover:bg-blue-800 transition-colors whitespace-nowrap shadow-sm"

@@ -81,7 +81,7 @@ export default async function AdminPage() {
       icon: <Briefcase size={40} />,
       href: "/admin/cases",
       buttonText: "Manage Cases",
-      color: "purple",
+      color: "red",
     },
     {
       title: "Personal Information",
@@ -136,10 +136,27 @@ export default async function AdminPage() {
 
 // Stat card component
 function StatCardComponent({ stat }: { stat: StatCard }) {
-  const bgColor = `bg-${stat.color}-50`;
-  const borderColor = `border-${stat.color}-100`;
-  const textColor = `text-${stat.color}-700`;
-  const labelColor = `text-${stat.color}-600`;
+  // Map color to specific tailwind classes
+  const getStatCardClasses = (color: string) => {
+    switch (color) {
+      case "blue":
+        return "bg-blue-50 border-blue-100 text-blue-700 label-text-blue-600";
+      case "green":
+        return "bg-green-50 border-green-100 text-green-700 label-text-green-600";
+      case "red":
+        return "bg-red-50 border-red-100 text-red-700 label-text-red-600";
+      case "amber":
+        return "bg-amber-50 border-amber-100 text-amber-700 label-text-amber-600";
+      case "purple":
+        return "bg-purple-50 border-purple-100 text-purple-700 label-text-purple-600";
+      default:
+        return "bg-slate-50 border-slate-100 text-slate-700 label-text-slate-600";
+    }
+  };
+
+  const classes = getStatCardClasses(stat.color);
+  const [bgColor, borderColor, textColor] = classes.split(" ");
+  const labelColorClass = classes.split(" ")[3].replace("label-text", "text");
 
   return (
     <div
@@ -147,7 +164,7 @@ function StatCardComponent({ stat }: { stat: StatCard }) {
     >
       <div className="flex items-center justify-center gap-2 mb-1">
         {stat.icon}
-        <p className={`${labelColor} text-xs sm:text-sm font-medium`}>
+        <p className={`${labelColorClass} text-xs sm:text-sm font-medium`}>
           {stat.label}
         </p>
       </div>
@@ -160,17 +177,69 @@ function StatCardComponent({ stat }: { stat: StatCard }) {
 
 // Action card component
 function ActionCardComponent({ card }: { card: ActionCard }) {
-  const buttonBg = `bg-${card.color}-600`;
-  const buttonHover = `hover:bg-${card.color}-700`;
-  const buttonRing = `focus:ring-${card.color}-500`;
-  const buttonTextColor = `text-${card.color}-200`;
-  const iconColor = `text-${card.color}-100`;
+  // Instead of using dynamic classes, map colors to specific tailwind classes
+  const getButtonClasses = (color: string) => {
+    switch (color) {
+      case "blue":
+        return "bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 text-white";
+      case "green":
+        return "bg-green-600 hover:bg-green-700 focus:ring-green-500 text-white";
+      case "red":
+        return "bg-red-600 hover:bg-red-700 focus:ring-red-500 text-white";
+      case "amber":
+        return "bg-amber-600 hover:bg-amber-700 focus:ring-amber-500 text-white";
+      case "purple":
+        return "bg-purple-600 hover:bg-purple-700 focus:ring-purple-500 text-white";
+      default:
+        return "bg-slate-600 hover:bg-slate-700 focus:ring-slate-500 text-white";
+    }
+  };
+
+  // Get icon color class
+  const getIconColorClass = (color: string) => {
+    switch (color) {
+      case "blue":
+        return "text-blue-100";
+      case "green":
+        return "text-green-100";
+      case "red":
+        return "text-red-100";
+      case "amber":
+        return "text-amber-100";
+      case "purple":
+        return "text-purple-100";
+      default:
+        return "text-slate-100";
+    }
+  };
+
+  // Get arrow color class
+  const getArrowColorClass = (color: string) => {
+    switch (color) {
+      case "blue":
+        return "text-blue-200";
+      case "green":
+        return "text-green-200";
+      case "red":
+        return "text-red-200";
+      case "amber":
+        return "text-amber-200";
+      case "purple":
+        return "text-purple-200";
+      default:
+        return "text-slate-200";
+    }
+  };
+
+  const buttonClasses = getButtonClasses(card.color);
+  const iconColorClass = getIconColorClass(card.color);
+  const arrowColorClass = getArrowColorClass(card.color);
 
   return (
     <div className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md">
       {/* Position the icon with lower z-index to ensure it stays behind text */}
       <div className="absolute right-2 sm:right-4 top-2 sm:top-4 opacity-30 pointer-events-none z-0">
-        <div className={iconColor}>{card.icon}</div>
+        <div className={iconColorClass}>{card.icon}</div>
       </div>
 
       {/* Content with higher z-index to appear above the icon */}
@@ -183,11 +252,10 @@ function ActionCardComponent({ card }: { card: ActionCard }) {
         </p>
         <Link
           href={card.href}
-          className={`inline-flex items-center gap-1 sm:gap-2 rounded-lg ${buttonBg} px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white 
-                   transition-colors ${buttonHover} focus:outline-none focus:ring-2 ${buttonRing} focus:ring-offset-1`}
+          className={`inline-flex items-center gap-1 sm:gap-2 rounded-lg px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 ${buttonClasses}`}
         >
           {card.buttonText}
-          <span className={`${buttonTextColor}`}>→</span>
+          <span className={arrowColorClass}>→</span>
         </Link>
       </div>
     </div>

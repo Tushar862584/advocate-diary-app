@@ -12,16 +12,17 @@ import { Button } from "@/components/ui/Button";
 import { Send } from "lucide-react";
 
 export default function ChatbotPage() {
-  const [messages, setMessages] = useState<
-    { content: string; isUser: boolean }[]
-  >([
+  const [messages, setMessages] = useState([
     {
-      content: "Hello! I am your legal assistant. How can I help you today?",
-      isUser: false,
+      id: "welcome",
+      role: "assistant",
+      content:
+        "Hello! I am your legal assistant powered by Gemini AI. How can I help you today?",
     },
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom of messages when new ones arrive
@@ -29,59 +30,59 @@ export default function ChatbotPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!input.trim()) return;
 
-    if (!input.trim() || isLoading) return;
-
-    // Add user message to chat
-    const userMessage = { content: input, isUser: true };
+    // Add the user's message to the chat
+    const userMessage = {
+      id: Date.now().toString(),
+      role: "user",
+      content: input,
+    };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
+    setError(null);
 
-    // Simulate AI response (replace with actual API call)
-    setTimeout(() => {
-      const aiMessage = {
-        content: getPlaceholderResponse(input),
-        isUser: false,
+    try {
+      // Send the user's message to the server
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [...messages, userMessage].map((msg) => ({
+            role: msg.role,
+            content: msg.content,
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch response from the server.");
+      }
+
+      const data = await response.json();
+
+      // Add the assistant's response to the chat
+      const assistantMessage = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: data.text,
       };
-      setMessages((prev) => [...prev, aiMessage]);
+      setMessages((prev) => [...prev, assistantMessage]);
+    } catch (err) {
+      console.error("Error fetching chat response:", err);
+      setError("Something went wrong. Please try again.");
+    } finally {
       setIsLoading(false);
-    }, 1000);
-  };
-
-  // Placeholder function - replace with actual AI integration
-  const getPlaceholderResponse = (userInput: string) => {
-    const lowercaseInput = userInput.toLowerCase();
-
-    if (lowercaseInput.includes("case") && lowercaseInput.includes("filing")) {
-      return 'To file a new case, you can go to the Cases section and click on "Create New Case". You\'ll need to fill in the details like case type, court name, and parties involved.';
     }
-
-    if (lowercaseInput.includes("hearing") || lowercaseInput.includes("date")) {
-      return "You can schedule or update hearing dates in the specific case details page. Navigate to the case and use the Hearings tab to add or modify hearing information.";
-    }
-
-    if (lowercaseInput.includes("help") || lowercaseInput.includes("guide")) {
-      return "I can help you with managing cases, scheduling hearings, understanding legal procedures, and navigating this application. What specific assistance do you need?";
-    }
-
-    if (lowercaseInput.includes("section") && lowercaseInput.includes("415")) {
-      return `
-        Union of India - Section
-        Section 415 in The Indian Penal Code, 1860
-        415. Cheating.—
-        Whoever, by deceiving any person, fraudulently or dishonestly induces the person so deceived to deliver any property to any person, or to consent that any person shall retain any property, or intentionally induces the person so deceived to do or omit to do anything which he would not do or omit if he were not so deceived, and which act or omission causes or is likely to cause damage or harm to that person in body, mind, reputation or property, is said to “cheat”.
-        Explanation.— A dishonest concealment of facts is a deception within the meaning of this section.
-      `;
-    }
-
-    return (
-      'I understand your query about "' +
-      userInput +
-      '". This is a placeholder response - in the live version, I would connect to an AI service to provide relevant legal information and assistance.'
-    );
   };
 
   return (
@@ -104,21 +105,23 @@ export default function ChatbotPage() {
           </div>
 
           <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3">
-            {messages.map((message, index) => (
+            {messages.map((message) => (
               <div
-                key={index}
+                key={message.id}
                 className={`flex ${
-                  message.isUser ? "justify-end" : "justify-start"
+                  message.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
                 <div
                   className={`max-w-[90%] sm:max-w-[80%] rounded-lg px-3 py-2 sm:px-4 ${
-                    message.isUser
+                    message.role === "user"
                       ? "bg-blue-600 text-white rounded-br-none"
                       : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-600 rounded-bl-none"
                   }`}
                 >
-                  <p className="text-sm break-words">{message.content}</p>
+                  <p className="text-sm break-words whitespace-pre-wrap">
+                    {message.content}
+                  </p>
                 </div>
               </div>
             ))}
@@ -143,18 +146,33 @@ export default function ChatbotPage() {
                 </div>
               </div>
             )}
+
+            {error && (
+              <div className="flex justify-center">
+                <div className="bg-red-50 text-red-500 rounded-lg px-3 py-2 text-sm border border-red-200">
+                  Error: {error}
+                  <button
+                    onClick={() => setError(null)}
+                    className="ml-2 underline text-blue-500 hover:text-blue-700"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div ref={messagesEndRef} />
           </div>
 
           <div className="border-t border-slate-200 dark:border-slate-700 p-2 sm:p-3">
             <form
-              onSubmit={handleSendMessage}
+              onSubmit={handleSubmit}
               className="flex items-center space-x-2"
             >
               <input
                 type="text"
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={handleInputChange}
                 placeholder="Ask a question..."
                 className="flex-1 rounded-full border border-slate-300 dark:border-slate-600 px-3 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-blue-500 dark:focus:ring-blue-400"
                 disabled={isLoading}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react"; // Add useRef here
 import { useRouter } from "next/navigation";
 import CourtSelector from "@/components/court-selector";
 
@@ -30,6 +30,7 @@ interface NewCaseFormProps {
 
 export default function NewCaseForm({ userId }: NewCaseFormProps) {
   const router = useRouter();
+  const courtSelectorRef = useRef<HTMLDivElement>(null); // Add this ref
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -127,6 +128,13 @@ export default function NewCaseForm({ userId }: NewCaseFormProps) {
       ...prev,
       courtName,
     }));
+  };
+
+  const handleRegistrationYearBlur = () => {
+    // When user leaves the registration year field, focus the court selector
+    setTimeout(() => {
+      courtSelectorRef.current?.focus();
+    }, 0);
   };
 
   const validateForm = () => {
@@ -276,6 +284,7 @@ export default function NewCaseForm({ userId }: NewCaseFormProps) {
               name="registrationYear"
               value={formData.registrationYear}
               onChange={handleChange}
+              onBlur={handleRegistrationYearBlur} // Add this onBlur handler
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               required
             />
@@ -290,6 +299,7 @@ export default function NewCaseForm({ userId }: NewCaseFormProps) {
               required
               label="Court Name"
               disabled={isSubmitting}
+              ref={courtSelectorRef} // Add the ref here
             />
           </div>
 

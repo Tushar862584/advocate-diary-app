@@ -43,11 +43,29 @@ export default function CaseAssignment({
   // Check if the URL has an assignment hash fragment
   useEffect(() => {
     if (typeof window !== "undefined") {
+      // Show the form automatically when the assignment tab is active
       if (window.location.hash === "#assignment") {
         setShowAssignForm(true);
       }
     }
   }, []);
+
+  // When this tab becomes active, handle form visibility
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (window.location.hash === "#assignment") {
+        // Do not automatically hide the form if it was manually opened
+        if (!showAssignForm) {
+          setShowAssignForm(true);
+        }
+      }
+    };
+
+    window.addEventListener("hashchange", handleHashChange);
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange);
+    };
+  }, [showAssignForm]);
 
   // Fetch case assignment details when needed
   useEffect(() => {
@@ -89,17 +107,28 @@ export default function CaseAssignment({
       if (!isAdmin || !showAssignForm) return;
 
       try {
+        console.log("Fetching users for assignment dropdown...");
         setLoading(true);
         const response = await fetch("/api/admin/users");
 
         if (!response.ok) {
+          console.error(`Error response from users API: ${response.status}`);
           throw new Error("Failed to fetch users");
         }
 
         const data = await response.json();
-        // API returns the users array directly, not wrapped in a 'users' object
+        console.log("Users API response:", data);
+        
+        // API returns the users array directly
         setUsers(Array.isArray(data) ? data : []);
+        
+        if (!Array.isArray(data)) {
+          console.warn("API did not return an array of users");
+        } else {
+          console.log(`Loaded ${data.length} users for dropdown`);
+        }
       } catch (err: any) {
+        console.error("Error fetching users:", err);
         setError(err.message || "An error occurred while fetching users");
       } finally {
         setLoading(false);
@@ -165,11 +194,8 @@ export default function CaseAssignment({
 
       // Close the form after successful submission
       setShowAssignForm(false);
-
-      // Remove the hash fragment from URL
-      if (typeof window !== "undefined") {
-        window.history.replaceState(null, "", window.location.pathname);
-      }
+      
+      // Keep the assignment tab active
     } catch (err: any) {
       setError(err.message || "An error occurred");
     } finally {
@@ -181,19 +207,8 @@ export default function CaseAssignment({
     setShowAssignForm(!showAssignForm);
     setError("");
     setSuccessMessage("");
-
-    // Remove or add the hash fragment from URL
-    if (typeof window !== "undefined") {
-      if (!showAssignForm) {
-        window.history.replaceState(
-          null,
-          "",
-          `${window.location.pathname}#assignment`
-        );
-      } else {
-        window.history.replaceState(null, "", window.location.pathname);
-      }
-    }
+    
+    // We don't need to modify URL here as the tabs handle the URL hash
   };
 
   // Only render the component for admins
@@ -202,7 +217,7 @@ export default function CaseAssignment({
   }
 
   return (
-    <div className="mb-6" id="assignment">
+    <div className="mb-6">
       <div className="mb-2 flex items-center justify-between">
         <h3 className="text-lg font-medium">Case Assignment</h3>
         <button
@@ -235,6 +250,47 @@ export default function CaseAssignment({
           <div>
             <p className="text-sm text-gray-500">Currently Assigned To:</p>
             <p>{currentUserName || "Not assigned"}</p>
+
+            {/* Add debug button in development */}
+            {process.env.NODE_ENV !== 'production' && (
+              <div className="mt-3 text-xs text-gray-500">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    console.log("Manual API test: Fetching users...");
+                    try {
+                      const response = await fetch("/api/admin/users");
+                      console.log("API response status:", response.status);
+                      if (!response.ok) {
+                        console.error("Error fetching users:", response.statusText);
+                        return;
+                      }
+                      const data = await response.json();
+                      console.log("Users data:", data);
+                      if (Array.isArray(data)) {
+                        console.log(`Found ${data.length} users`);
+                      } else {
+                        console.log("Response is not an array:", typeof data);
+                      }
+                    } catch (error) {
+                      console.error("API call error:", error);
+                    }
+                  }}
+                  className="underline"
+                >
+                  Debug: Test Users API
+                </button>
+                <span className="mx-2">|</span>
+                <a
+                  href="/api/debug"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  Debug API Status
+                </a>
+              </div>
+            )}
 
             {preservedItems &&
               (preservedItems.notes > 0 || preservedItems.files > 0) && (
@@ -278,16 +334,33 @@ export default function CaseAssignment({
                 <option value="" disabled>
                   -- Select a user --
                 </option>
-                {Array.isArray(users) &&
-                  users.map((user) => (
-                    <option key={user.id} value={user.id}>
-                      {user.name} ({user.email})
+                {Array.isArray(users) ? (
+                  users.length > 0 ? (
+                    users.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.name} ({user.email})
+                      </option>
+                    ))
+                  ) : (
+                    <option value="" disabled>
+                      No users found
                     </option>
-                  ))}
+                  )
+                ) : (
+                  <option value="" disabled>
+                    Error loading users
+                  </option>
+                )}
               </select>
-              {loading && (
-                <p className="mt-1 text-sm text-gray-500">Loading users...</p>
-              )}
+              <div className="mt-1 text-xs text-gray-500">
+                {loading ? (
+                  <p>Loading users...</p>
+                ) : users.length > 0 ? (
+                  <p>Found {users.length} users</p>
+                ) : (
+                  <p>No users loaded</p>
+                )}
+              </div>
               <p className="mt-1 text-xs text-gray-500">
                 Note: Cases must be assigned to a user.
               </p>

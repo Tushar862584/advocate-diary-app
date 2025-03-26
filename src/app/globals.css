@@ -52,7 +52,7 @@ body {
   --foreground: #f1f5f9;
 }
 
-  :root {
+:root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -85,25 +85,26 @@ body {
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
 
   /* Professional color palette for lawyer portal */
   --color-primary: 51 65 85; /* slate-700 */
   --color-primary-light: 71 85 105; /* slate-600 */
   --color-primary-dark: 30 41 59; /* slate-800 */
-  
+
   --color-accent: 59 130 246; /* blue-500 */
   --color-accent-light: 96 165 250; /* blue-400 */
   --color-accent-dark: 37 99 235; /* blue-600 */
-  
+
   --color-success: 34 197 94; /* green-500 */
   --color-error: 239 68 68; /* red-500 */
   --color-warning: 245 158 11; /* amber-500 */
-  
+
   --color-text-primary: 15 23 42; /* slate-900 */
   --color-text-secondary: 71 85 105; /* slate-600 */
   --color-text-tertiary: 148 163 184; /* slate-400 */
-  
+
   --color-bg-primary: 255 255 255; /* white */
   --color-bg-secondary: 248 250 252; /* slate-50 */
   --color-bg-tertiary: 241 245 249; /* slate-100 */
@@ -161,7 +162,8 @@ html {
 }
 
 /* Remove font bouncing effect */
-html, body {
+html,
+body {
   font-family: var(--font-sans);
   font-size: 16px;
   height: 100%;
@@ -196,12 +198,15 @@ html, body {
 }
 
 /* Prevent inconsistent button rendering */
-button, a {
+button,
+a {
   -webkit-tap-highlight-color: transparent;
 }
 
 /* Ensure consistent input heights across browsers */
-input, select, textarea {
+input,
+select,
+textarea {
   line-height: 1.5;
 }
 
@@ -235,7 +240,7 @@ input, select, textarea {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-  
+
   .responsive-table th,
   .responsive-table td {
     white-space: nowrap;
@@ -300,27 +305,27 @@ input, select, textarea {
     height: 72px;
     vertical-align: middle;
   }
-  
+
   .cases-page .responsive-table th:nth-child(1),
   .cases-page .responsive-table td:nth-child(1) {
     width: 15%;
   }
-  
+
   .cases-page .responsive-table th:nth-child(2),
   .cases-page .responsive-table td:nth-child(2) {
     width: 35%;
   }
-  
+
   .cases-page .responsive-table th:nth-child(3),
   .cases-page .responsive-table td:nth-child(3) {
     width: 15%;
   }
-  
+
   .cases-page .responsive-table th:nth-child(4),
   .cases-page .responsive-table td:nth-child(4) {
     width: 20%;
   }
-  
+
   .cases-page .responsive-table th:last-child,
   .cases-page .responsive-table td:last-child {
     width: 130px;
@@ -334,7 +339,7 @@ input, select, textarea {
   .cases-page .sm\:hidden > div {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
-  
+
   .cases-page .sm\:hidden > div:active {
     transform: scale(0.99);
     box-shadow: none;
@@ -363,31 +368,35 @@ input, select, textarea {
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  
-  h1 { font-size: 1.5rem; }
-  h2 { font-size: 1.25rem; }
-  
+
+  h1 {
+    font-size: 1.5rem;
+  }
+  h2 {
+    font-size: 1.25rem;
+  }
+
   .sm-stack {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .sm-hide {
     display: none;
   }
-  
+
   .sm-full {
     width: 100%;
   }
-  
+
   /* Table improvements for very small screens */
   .responsive-table th,
   .responsive-table td {
     padding: 0.5rem;
     font-size: 0.75rem;
   }
-  
+
   /* Improve action buttons on mobile */
   .action-buttons {
     flex-wrap: nowrap;

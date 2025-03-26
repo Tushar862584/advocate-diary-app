@@ -261,7 +261,7 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="h-screen pt-16 flex flex-col">
+        <div className="h-screen pt-16 pb-16 flex flex-col">
           <div className="flex-1 overflow-y-auto p-4">
             <nav className="space-y-2 mt-4">
               {navItems.map(
@@ -286,6 +286,7 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
             </nav>
           </div>
 
+          {/* User Info and Sign Out Button */}
           <div className="border-t border-slate-700 p-4">
             <div className="flex items-center mb-4 p-2 rounded-md bg-slate-700/50">
               <UserCircle

@@ -34,30 +34,45 @@ export async function DELETE(
       return NextResponse.json({ error: "File not found" }, { status: 404 });
     }
 
-    // Check if user owns the case that contains this file
+    // Check permission to delete the file
     const userId = session.user.id as string;
     const isAdmin = session.user.role === "ADMIN";
-    const isCaseOwner = upload.case.userId === userId;
-
-    if (!isAdmin && !isCaseOwner) {
-      return NextResponse.json(
-        { error: "You don't have permission to delete this file" },
-        { status: 403 }
-      );
+    
+    // Different permission logic based on whether it's a personal file or case file
+    if (upload.caseId && upload.case) {
+      // Case file: check if user owns the case
+      const isCaseOwner = upload.case.userId === userId;
+      if (!isAdmin && !isCaseOwner) {
+        return NextResponse.json(
+          { error: "You don't have permission to delete this file" },
+          { status: 403 }
+        );
+      }
+    } else {
+      // Personal file: check if user owns the file
+      if (!isAdmin && upload.userId !== userId) {
+        return NextResponse.json(
+          { error: "You don't have permission to delete this file" },
+          { status: 403 }
+        );
+      }
     }
 
-    // Extract the filename from the URL
-    // URLs are in the format: https://<domain>/storage/v1/object/public/case-files/<caseId>/<filename>
-    const fileUrl = upload.fileUrl;
+    console.log("Starting to delete file:", upload.fileUrl);
 
-    // Log the URL for debugging
-    console.log("File URL:", fileUrl);
-
-    // Extract the path after case-files/
-    const pathMatch = fileUrl.match(/case-files\/([^?#]+)/);
+    // Determine which bucket the file is in
+    let bucketName = "case-files";
+    let pathMatch;
+    
+    if (upload.fileUrl.includes("personal-files")) {
+      bucketName = "personal-files";
+      pathMatch = upload.fileUrl.match(/personal-files\/([^?#]+)/);
+    } else {
+      pathMatch = upload.fileUrl.match(/case-files\/([^?#]+)/);
+    }
 
     if (!pathMatch) {
-      console.error("Failed to extract file path from URL:", fileUrl);
+      console.error("Failed to extract file path from URL:", upload.fileUrl);
       // If we can't parse the URL, we'll still delete the database record
       await prisma.upload.delete({
         where: { id: uploadId },
@@ -66,11 +81,11 @@ export async function DELETE(
     }
 
     const filePath = pathMatch[1];
-    console.log("Deleting file path:", filePath);
+    console.log(`Deleting file path: ${filePath} from bucket: ${bucketName}`);
 
     // Delete the file from Supabase Storage
     const { error: deleteError } = await supabaseAdmin.storage
-      .from("case-files")
+      .from(bucketName)
       .remove([filePath]);
 
     if (deleteError) {

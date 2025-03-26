@@ -16,9 +16,9 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="container mx-auto px-4 py-4 sm:py-6">
-      <div className="mb-6 sm:mb-8 border-b pb-4 sm:pb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+    <div className="container mx-auto px-0 sm:px-1 md:px-2 py-2 sm:py-4 md:py-6">
+      <div className="mb-4 sm:mb-6 border-b pb-2 sm:pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 px-2 sm:px-0">
           Admin Dashboard
         </h1>
         {/*

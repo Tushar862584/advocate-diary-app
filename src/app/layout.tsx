@@ -25,7 +25,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Advocate Diary App",
+  title: "Advocate Diary",
   description: "Manage legal cases, hearings, and documents",
 };
 
@@ -39,14 +39,27 @@ export default function RootLayout({
       <head>
         <meta
           name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
         />
       </head>
       <body
-        className={`antialiased text-foreground bg-background ${outfit.className}`}
+        className={`antialiased text-foreground bg-background ${outfit.className} text-[15px] sm:text-base`}
       >
-        <Toaster position="top-center" richColors />
-        <AuthProvider>{children}</AuthProvider>
+        <Toaster
+          position="top-center"
+          richColors
+          toastOptions={{
+            style: {
+              maxWidth: "95vw",
+              margin: "0 auto",
+              fontSize: "0.875rem",
+              padding: "0.5rem 0.75rem",
+            },
+          }}
+        />
+        <AuthProvider>
+          <div className="max-w-[100vw] overflow-x-hidden">{children}</div>
+        </AuthProvider>
       </body>
     </html>
   );

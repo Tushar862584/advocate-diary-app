@@ -23,41 +23,116 @@ export async function POST(request: Request) {
     // Parse the request body
     const { sourceUserId, targetUserId } = await request.json();
 
-    // Validate the request
-    if (!sourceUserId || !targetUserId) {
+    // Validate target user ID
+    if (!targetUserId) {
       return NextResponse.json(
-        { message: "Both source and target user IDs are required" },
+        { message: "Target user ID is required" },
         { status: 400 }
       );
     }
 
-    // Verify both users exist
-    const sourceUser = await prisma.user.findUnique({
-      where: { id: sourceUserId },
-    });
-
+    // Verify target user exists
     const targetUser = await prisma.user.findUnique({
       where: { id: targetUserId },
     });
 
-    if (!sourceUser || !targetUser) {
+    if (!targetUser) {
       return NextResponse.json(
-        { message: "One or both users not found" },
+        { message: "Target user not found" },
         { status: 404 }
       );
     }
 
-    // Update all cases from source user to target user
-    const result = await prisma.case.updateMany({
-      where: { userId: sourceUserId },
-      data: { userId: targetUserId },
-    });
+    // Handle reassignment based on source
+    if (sourceUserId === null) {
+      // Use Prisma's raw query to find unassigned cases (excluding PERSONAL)
+      const unassignedCaseIds = await prisma.$queryRaw`
+        SELECT id FROM "Case" WHERE "userId" IS NULL AND "caseType" != 'PERSONAL'
+      `;
+      
+      // No unassigned cases found
+      if (!Array.isArray(unassignedCaseIds) || unassignedCaseIds.length === 0) {
+        return NextResponse.json({
+          message: `No unassigned cases found to assign to ${targetUser.name}`,
+          count: 0,
+        });
+      }
+      
+      // Extract the IDs
+      const caseIds = unassignedCaseIds.map((c: any) => c.id);
+      
+      // Update each unassigned case
+      const result = await prisma.case.updateMany({
+        where: {
+          id: {
+            in: caseIds
+          }
+        },
+        data: { userId: targetUserId },
+      });
 
-    // Return success response
-    return NextResponse.json({
-      message: `${result.count} case(s) have been reassigned from ${sourceUser.name} to ${targetUser.name}`,
-      count: result.count,
-    });
+      return NextResponse.json({
+        message: `${result.count} unassigned case(s) have been assigned to ${targetUser.name}`,
+        count: result.count,
+      });
+    } else {
+      // Verify source user exists
+      const sourceUser = await prisma.user.findUnique({
+        where: { id: sourceUserId },
+      });
+
+      if (!sourceUser) {
+        return NextResponse.json(
+          { message: "Source user not found" },
+          { status: 404 }
+        );
+      }
+
+      // Special handling when admin is transferring their own cases
+      const isAdminTransferringOwnCases = sourceUserId === session.user.id;
+
+      // Get total count of cases before transfer (for reporting)
+      const totalCasesCount = await prisma.case.count({
+        where: { userId: sourceUserId },
+      });
+
+      let result;
+      
+      // Determine if we need to filter out PERSONAL cases
+      if (isAdminTransferringOwnCases) {
+        // If admin is transferring their own cases, exclude PERSONAL cases
+        result = await prisma.case.updateMany({
+          where: {
+            userId: sourceUserId,
+            caseType: { not: "PERSONAL" }
+          },
+          data: { userId: targetUserId },
+        });
+      } else {
+        // Standard transfer of all cases
+        result = await prisma.case.updateMany({
+          where: { userId: sourceUserId },
+          data: { userId: targetUserId },
+        });
+      }
+
+      // Create appropriate message based on whether PERSONAL cases were excluded
+      let message = `${result.count} case(s) have been reassigned from ${sourceUser.name} to ${targetUser.name}`;
+      
+      // Add info about excluded PERSONAL cases if applicable
+      if (isAdminTransferringOwnCases && totalCasesCount > result.count) {
+        const excludedCount = totalCasesCount - result.count;
+        message += `. ${excludedCount} PERSONAL case(s) were excluded from the transfer.`;
+      }
+
+      // Return success response
+      return NextResponse.json({
+        message,
+        count: result.count,
+        totalCasesCount,
+        excludedPersonalCases: isAdminTransferringOwnCases ? (totalCasesCount - result.count) : 0,
+      });
+    }
   } catch (error) {
     console.error("Error reassigning cases:", error);
     return NextResponse.json(

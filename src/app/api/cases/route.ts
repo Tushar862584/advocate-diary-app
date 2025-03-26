@@ -122,10 +122,17 @@ export async function GET(request: NextRequest) {
     }
 
     const isAdmin = session.user.role === "ADMIN";
+    // Parse URL to get query parameters
+    const url = new URL(request.url);
+    const includePERSONAL = url.searchParams.get('includePERSONAL') === 'true';
     
-    // Get cases based on user role
+    // Get cases based on user role, filtering out PERSONAL cases for admin unless explicitly requested
     const cases = await prisma.case.findMany({
-      where: isAdmin ? {} : { userId: session.user.id },
+      where: isAdmin 
+        ? includePERSONAL 
+          ? {} // Include all cases if explicitly requested
+          : { caseType: { not: 'PERSONAL' } } // Filter out PERSONAL cases for admin by default
+        : { userId: session.user.id }, // Users always see all their own cases including PERSONAL
       include: {
         petitioners: true,
         respondents: true,

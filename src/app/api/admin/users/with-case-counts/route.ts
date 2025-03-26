@@ -22,7 +22,7 @@ export async function GET() {
   }
   
   try {
-    // Get all users with their case counts
+    // Get all users with their case counts, excluding PERSONAL cases
     const users = await prisma.user.findMany({
       where: {
         role: { 
@@ -30,9 +30,25 @@ export async function GET() {
         }
       },
       include: {
+        cases: {
+          where: {
+            caseType: {
+              not: 'PERSONAL'
+            }
+          },
+          select: {
+            id: true
+          }
+        },
         _count: {
           select: {
-            cases: true
+            cases: {
+              where: {
+                caseType: {
+                  not: 'PERSONAL'
+                }
+              }
+            }
           }
         }
       },
@@ -41,7 +57,7 @@ export async function GET() {
       }
     });
     
-    // Transform the data to include caseCount
+    // Transform the data to include caseCount (excluding PERSONAL cases)
     const usersWithCounts = users.map(user => ({
       id: user.id,
       name: user.name,

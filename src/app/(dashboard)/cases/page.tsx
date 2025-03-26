@@ -15,10 +15,12 @@ export default async function CasesPage() {
   const isAdmin = session.user?.role === "ADMIN";
 
   // Get cases:
-  // - Admins see all cases, including unassigned ones
-  // - Regular users see only their cases
+  // - Admins see all non-PERSONAL cases
+  // - Regular users see only their cases (including PERSONAL)
   const cases = await prisma.case.findMany({
-    where: isAdmin ? {} : { userId: session.user?.id },
+    where: isAdmin
+      ? { caseType: { not: "PERSONAL" } } // Exclude PERSONAL cases for admins
+      : { userId: session.user?.id }, // Users see all their own cases
     select: {
       id: true,
       caseType: true,
@@ -64,11 +66,11 @@ export default async function CasesPage() {
   });
 
   return (
-    <div className="cases-page">
-      <FilteredCases 
-        initialCases={cases as Case[]} 
-        isAdmin={isAdmin} 
-        userId={session.user.id} 
+    <div className="w-full max-w-full overflow-hidden">
+      <FilteredCases
+        initialCases={cases as Case[]}
+        isAdmin={isAdmin}
+        userId={session.user?.id || ""}
       />
     </div>
   );

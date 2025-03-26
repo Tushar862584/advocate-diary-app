@@ -68,12 +68,14 @@ export async function POST(request: NextRequest) {
     
     // Return the user without the password
     return NextResponse.json({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      }
     }, { status: 201 });
   } catch (error) {
     console.error("Error creating user:", error);
@@ -87,36 +89,37 @@ export async function POST(request: NextRequest) {
 // GET /api/admin/users - Get all users
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    console.log("Starting GET /api/admin/users request");
     
-    // Check if user is authenticated and is an admin
+    const session = await getServerSession(authOptions);
     if (!session || session.user?.role !== "ADMIN") {
+      console.log("Unauthorized access attempt to users list");
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
     
-    // Get all users
     const users = await prisma.user.findMany({
+      orderBy: {
+        name: 'asc',
+      },
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: {
-        createdAt: "desc",
       },
     });
     
+    console.log(`Successfully retrieved ${users.length} users`);
+    
+    // Return the users array directly, not wrapped in an object
     return NextResponse.json(users);
   } catch (error) {
     console.error("Error fetching users:", error);
     return NextResponse.json(
-      { error: "An error occurred while fetching users" },
+      { error: "Failed to fetch users" },
       { status: 500 }
     );
   }

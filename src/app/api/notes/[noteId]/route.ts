@@ -8,6 +8,7 @@ export async function DELETE(
   { params }: { params: { noteId: string } }
 ) {
   try {
+    console.log(`Starting deletion for note ID: ${params.noteId}`);
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -33,11 +34,13 @@ export async function DELETE(
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
 
+    console.log(`Note found: ${note.id}, caseId: ${note.caseId}, userId: ${note.userId}`);
+
     // Check if user owns this note directly (created it) or owns the case
     const userId = session.user.id as string;
     const isAdmin = session.user.role === "ADMIN";
     const isOwner = note.userId === userId;
-    const isCaseOwner = note.case.userId === userId;
+    const isCaseOwner = note.case && note.case.userId === userId;
 
     if (!isAdmin && !isOwner && !isCaseOwner) {
       return NextResponse.json(
@@ -50,6 +53,7 @@ export async function DELETE(
     await prisma.note.delete({
       where: { id: noteId },
     });
+    console.log(`Note deleted successfully: ${noteId}`);
 
     return NextResponse.json({ success: true });
   } catch (error) {

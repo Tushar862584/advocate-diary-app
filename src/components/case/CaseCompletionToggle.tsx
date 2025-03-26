@@ -31,14 +31,13 @@ export default function CaseCompletionToggle({
       setIsCompleted(newStatus);
 
       // Use toast.promise to manage all toast notifications
-      await toast.promise(
-        updateCaseStatus(newStatus),
-        {
-          loading: 'Updating case status...',
-          success: `Case marked as ${newStatus ? "Completed" : "Pending"} successfully!`,
-          error: 'Failed to update case status. Please try again.'
-        }
-      );
+      await toast.promise(updateCaseStatus(newStatus), {
+        loading: "Updating case status...",
+        success: `Case marked as ${
+          newStatus ? "Completed" : "Pending"
+        } successfully!`,
+        error: "Failed to update case status. Please try again.",
+      });
 
       router.refresh();
     } catch (error) {
@@ -79,7 +78,7 @@ export default function CaseCompletionToggle({
 
   if (isAdmin) {
     return (
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
         {isCompleted ? (
           <div className="flex items-center gap-2 text-green-600">
             <Check className="h-5 w-5" />
@@ -95,7 +94,7 @@ export default function CaseCompletionToggle({
         <button
           onClick={toggleStatus}
           disabled={isLoading}
-          className={`relative w-14 h-8 rounded-full transition-all duration-300 ${
+          className={`relative w-14 h-8 rounded-full transition-all duration-300 mt-1 sm:mt-0 ${
             isLoading ? "opacity-70 cursor-not-allowed" : ""
           } ${
             isCompleted

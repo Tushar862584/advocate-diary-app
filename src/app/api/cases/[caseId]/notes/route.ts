@@ -9,15 +9,20 @@ export async function POST(
   { params }: { params: { caseId: string } }
 ) {
   try {
+    console.log(`Starting POST to add note to case: ${params.caseId}`);
+    
     // Get the authenticated user
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
+      console.log("Unauthorized - No valid session");
       return NextResponse.json(
         { message: "Unauthorized" },
         { status: 401 }
       );
     }
 
+    console.log(`Authenticated user: ${session.user.id} (${session.user.name})`);
+    
     // Get the caseId from params
     const { caseId } = params;
 
@@ -27,15 +32,19 @@ export async function POST(
     });
 
     if (!caseData) {
+      console.log(`Case not found: ${caseId}`);
       return NextResponse.json(
         { message: "Case not found" },
         { status: 404 }
       );
     }
 
+    console.log(`Case found: ${caseData.id}, userId: ${caseData.userId}`);
+    
     // Check if user has permission to add notes to this case
     const isAdmin = session.user.role === "ADMIN";
     if (!isAdmin && caseData.userId !== session.user.id) {
+      console.log(`Forbidden - User ${session.user.id} doesn't own case ${caseId}`);
       return NextResponse.json(
         { message: "Forbidden" },
         { status: 403 }
@@ -43,9 +52,13 @@ export async function POST(
     }
 
     // Parse request body
-    const { content } = await req.json();
+    const body = await req.json();
+    const { content } = body;
+    
+    console.log(`Received note content: ${content ? 'Valid content' : 'Empty content'}`);
     
     if (!content || typeof content !== "string" || content.trim() === "") {
+      console.log("Invalid note content");
       return NextResponse.json(
         { message: "Note content is required" },
         { status: 400 }
@@ -53,6 +66,7 @@ export async function POST(
     }
 
     // Create the note
+    console.log("Creating note in database");
     const note = await prisma.note.create({
       data: {
         content,
@@ -69,11 +83,12 @@ export async function POST(
       },
     });
 
+    console.log(`Note created successfully with ID: ${note.id}`);
     return NextResponse.json(note);
   } catch (error) {
     console.error("Error adding note:", error);
     return NextResponse.json(
-      { message: "Internal server error" },
+      { message: "Internal server error", details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }

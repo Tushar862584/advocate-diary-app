@@ -117,18 +117,22 @@ export default async function CaseDetailPage({
               </svg>
               Back to Cases
             </Link>
-            <div className="flex justify-between items-center mt-2">
-              <h1 className="text-2xl font-bold text-slate-800">
+
+            {/* Separate heading and status toggle for better mobile layout */}
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4 mt-2">
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
                 {caseDetail.caseType}/{caseDetail.registrationNum} -{" "}
                 {caseDetail.title}
               </h1>
-              
+
               {/* Show completion status to all users, but only admins can toggle */}
-              <CaseCompletionToggle
-                caseId={caseId}
-                initialStatus={Boolean(caseDetail.isCompleted)}
-                isAdmin={isAdmin}
-              />
+              <div className="self-start sm:self-auto">
+                <CaseCompletionToggle
+                  caseId={caseId}
+                  initialStatus={Boolean(caseDetail.isCompleted)}
+                  isAdmin={isAdmin}
+                />
+              </div>
             </div>
           </div>
 
@@ -141,8 +145,6 @@ export default async function CaseDetailPage({
                 caseType: caseDetail.caseType,
                 registrationNum: String(caseDetail.registrationNum),
                 registrationYear: String(caseDetail.registrationYear),
-
-                // Current hearing data with notes
                 currentHearing:
                   formattedHearings.length > 0
                     ? new Date(formattedHearings[0].date)
@@ -151,8 +153,6 @@ export default async function CaseDetailPage({
                   formattedHearings.length > 0 && formattedHearings[0].notes
                     ? formattedHearings[0].notes
                     : null,
-
-                // Next hearing data
                 nextHearing:
                   formattedHearings.length > 0 && formattedHearings[0].nextDate
                     ? new Date(formattedHearings[0].nextDate)
@@ -175,19 +175,19 @@ export default async function CaseDetailPage({
                 courtName: caseDetail.courtName,
                 isCompleted: caseDetail.isCompleted,
                 user: caseDetail.user,
-                notes: caseDetail.notes.map(note => ({
+                notes: caseDetail.notes.map((note) => ({
                   id: note.id,
                   content: note.content,
                   createdAt: note.createdAt,
-                  user: note.user ? { name: note.user.name } : null
+                  user: note.user ? { name: note.user.name } : null,
                 })),
-                uploads: caseDetail.uploads.map(file => ({
+                uploads: caseDetail.uploads.map((file) => ({
                   id: file.id,
                   fileName: file.fileName,
                   fileUrl: file.fileUrl,
                   fileType: file.fileType,
-                  createdAt: file.createdAt
-                }))
+                  createdAt: file.createdAt,
+                })),
               }}
               formattedHearings={formattedHearings}
               petitioners={petitioners}
@@ -303,20 +303,8 @@ export default async function CaseDetailPage({
         </div>
       </div>
 
-      {/* Case Assignment Section - Only visible to admins */}
-      {isAdmin && (
-        <div className="mb-6 bg-white rounded-lg border border-slate-200 p-5 shadow-sm">
-          <CaseAssignment
-            caseId={caseId}
-            currentUserId={caseDetail.userId}
-            currentUserName={caseDetail.user?.name || null}
-            isAdmin={isAdmin}
-          />
-        </div>
-      )}
-
       {/* Tabs Section */}
-      <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-1">
+      <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-2">
         <CaseTabs
           caseId={caseId}
           hearingsComponent={
@@ -340,6 +328,16 @@ export default async function CaseDetailPage({
               canUpload={canEdit}
               currentUserId={session.user?.id || ""}
             />
+          }
+          assignmentComponent={
+            isAdmin ? (
+              <CaseAssignment
+                caseId={caseId}
+                currentUserId={caseDetail.userId}
+                currentUserName={caseDetail.user?.name || null}
+                isAdmin={isAdmin}
+              />
+            ) : null
           }
         />
       </div>

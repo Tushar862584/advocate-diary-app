@@ -18,6 +18,7 @@ model User {
   cases     Case[]
   notes     Note[]
   uploads   Upload[]
+  personalInfo   PersonalInfo?
 }
 
 model Case {
@@ -86,10 +87,29 @@ model Upload {
   fileUrl   String
   fileType  String
   createdAt DateTime @default(now())
-  caseId    String
+  caseId    String?
   userId    String?
-  case      Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  case      Case?    @relation(fields: [caseId], references: [id], onDelete: Cascade)
   user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model PersonalInfo {
+  id            String   @id @default(uuid())
+  address       String?
+  city          String?
+  state         String?
+  zipCode       String?
+  phoneNumber   String?
+  dateOfBirth   DateTime?
+  idNumber      String?  // For bar association ID, government ID, etc.
+  notes         String?
+  profileImage  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relation to User
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum Role {

@@ -10,24 +10,24 @@ const model = wrapLanguageModel({
 });
 
 export async function POST(req: Request) {
-  console.log(req);
   try {
     // Parse the request body
     const { messages } = await req.json();
-    console.log('Full messages being sent to model:', messages);
+    // console.log('Full messages being sent to model:', messages);
 
     // Format messages for the AI SDK
     const formattedMessages = [
       {
         role: "system",
-        content: "You are a legal assistant your answers should be based primarily on the origin country (INDIA), and you solve queries related to the country's laws, regulations, and procedures.",
+        content:
+          "You are a legal assistant your answers should be based primarily on the origin country (INDIA), and you solve queries related to the country's laws, regulations, and procedures.",
       },
       ...messages.map((message: any) => ({
         role: message.role === "user" ? "user" : "assistant",
         content: message.content,
-      }))
+      })),
     ];
-    console.log('Formatted messages:', formattedMessages);
+    // console.log('Formatted messages:', formattedMessages);
 
     // Generate the response
     const result = await generateText({

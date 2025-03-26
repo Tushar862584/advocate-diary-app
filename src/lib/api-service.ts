@@ -89,17 +89,19 @@ export async function assignCase(params: AssignCaseParams): Promise<ApiResponse<
 
 /**
  * Get all cases
+ * @param includePERSONAL - Whether to include PERSONAL cases (only relevant for admins)
  */
-export async function getCases(): Promise<ApiResponse<any[]>> {
+export async function getCases(includePERSONAL = false): Promise<ApiResponse<any[]>> {
   try {
-    const response = await fetch('/api/cases');
+    const url = includePERSONAL ? '/api/cases?includePERSONAL=true' : '/api/cases';
+    const response = await fetch(url);
     const data = await response.json();
 
     if (!response.ok) {
       return { error: data.message || 'Failed to fetch cases' };
     }
 
-    return { data: data.cases };
+    return { data: data };
   } catch (error) {
     return { error: 'An unexpected error occurred' };
   }

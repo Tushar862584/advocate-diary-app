@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface CaseTabsProps {
   caseId: string;
   hearingsComponent: React.ReactNode;
   notesComponent: React.ReactNode;
   filesComponent: React.ReactNode;
+  assignmentComponent?: React.ReactNode;
 }
 
 export default function CaseTabs({
@@ -14,10 +15,27 @@ export default function CaseTabs({
   hearingsComponent,
   notesComponent,
   filesComponent,
+  assignmentComponent,
 }: CaseTabsProps) {
   const [activeTab, setActiveTab] = useState("hearings");
 
-  // Define the tabs based on the passed components
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const hash = window.location.hash;
+      if (hash === "#hearings") setActiveTab("hearings");
+      if (hash === "#notes") setActiveTab("notes");
+      if (hash === "#documents") setActiveTab("documents");
+      if (hash === "#assignment" && assignmentComponent) setActiveTab("assignment");
+    }
+  }, [assignmentComponent]);
+
+  const handleTabChange = (tabId: string) => {
+    if (typeof window !== "undefined") {
+      window.history.replaceState(null, "", `${window.location.pathname}#${tabId}`);
+    }
+    setActiveTab(tabId);
+  };
+
   const tabs = [
     {
       id: "hearings",
@@ -36,6 +54,14 @@ export default function CaseTabs({
     },
   ];
 
+  if (assignmentComponent) {
+    tabs.push({
+      id: "assignment",
+      label: "Assignment",
+      content: assignmentComponent,
+    });
+  }
+
   return (
     <div className="w-full">
       <div className="border-b border-gray-200">
@@ -46,7 +72,7 @@ export default function CaseTabs({
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                 activeTab === tab.id
                   ? "border-blue-500 text-blue-600"
@@ -65,6 +91,7 @@ export default function CaseTabs({
               <div
                 key={`content-${tab.id}`}
                 className={`${activeTab === tab.id ? "block" : "hidden"}`}
+                id={tab.id}
               >
                 {tab.content}
               </div>

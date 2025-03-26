@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { AlertCircle, RotateCw } from "lucide-react";
 
 interface UserData {
   id: string;
@@ -21,6 +23,7 @@ export default function BulkCaseAssignmentForm({
   unassignedCount,
 }: BulkCaseAssignmentFormProps) {
   const router = useRouter();
+  const { data: session } = useSession();
   const [sourceUserId, setSourceUserId] = useState<string | null>(null);
   const [targetUserId, setTargetUserId] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,6 +32,9 @@ export default function BulkCaseAssignmentForm({
   const [mode, setMode] = useState<"transfer-user" | "assign-unassigned">(
     "transfer-user"
   );
+
+  // Track if the admin is transferring their own cases
+  const isAdminTransferringSelf = sourceUserId === session?.user?.id;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,13 +60,16 @@ export default function BulkCaseAssignmentForm({
       const sourceUser = users.find((u) => u.id === sourceUserId);
       const targetUser = users.find((u) => u.id === targetUserId);
 
-      if (
-        !confirm(
-          `Are you sure you want to transfer all cases (${
-            sourceUser?.caseCount || 0
-          }) from ${sourceUser?.name} to ${targetUser?.name}?`
-        )
-      ) {
+      let confirmMessage = `Are you sure you want to transfer all cases (${
+        sourceUser?.caseCount || 0
+      }) from ${sourceUser?.name} to ${targetUser?.name}?`;
+
+      // Add a note about PERSONAL cases if admin is transferring own cases
+      if (isAdminTransferringSelf) {
+        confirmMessage += "\n\nNote: PERSONAL cases will not be transferred.";
+      }
+
+      if (!confirm(confirmMessage)) {
         setIsSubmitting(false);
         return;
       }
@@ -96,7 +105,8 @@ export default function BulkCaseAssignmentForm({
 
       const data = await response.json();
       setSuccessMessage(
-        `${data.count} case(s) have been reassigned successfully`
+        data.message ||
+          `${data.count} case(s) have been reassigned successfully`
       );
 
       // Reset form
@@ -121,57 +131,63 @@ export default function BulkCaseAssignmentForm({
   return (
     <div>
       {successMessage && (
-        <div className="mb-4 rounded-md bg-green-50 p-4 text-sm text-green-600">
-          {successMessage}
+        <div className="mb-4 rounded-md bg-green-50 p-3 text-sm text-green-600 border border-green-200 flex items-start">
+          <div className="flex-shrink-0 text-green-500 mr-2">✓</div>
+          <p>{successMessage}</p>
         </div>
       )}
 
       {error && (
-        <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-600">
-          {error}
+        <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-600 border border-red-200 flex items-start">
+          <AlertCircle className="h-5 w-5 text-red-500 mr-2 flex-shrink-0" />
+          <p>{error}</p>
         </div>
       )}
 
-      <h3 className="mb-4 text-lg font-medium">Bulk Case Assignment</h3>
+      <div className="mb-4">
+        <h3 className="text-base font-medium text-slate-800 mb-1">Assignment Options</h3>
+        <p className="text-sm text-slate-500">Choose the type of case assignment operation</p>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex space-x-4 mb-4">
-          <label className="inline-flex items-center">
+        <div className="bg-slate-50 p-3 rounded-md border border-slate-200 space-y-2">
+          <label className="flex items-center space-x-2 cursor-pointer">
             <input
               type="radio"
-              className="form-radio"
+              className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
               name="mode"
               value="transfer-user"
               checked={mode === "transfer-user"}
               onChange={() => setMode("transfer-user")}
             />
-            <span className="ml-2">Transfer between users</span>
+            <span className="text-sm font-medium text-slate-700">Transfer between users</span>
           </label>
-          <label className="inline-flex items-center">
+          <label className="flex items-center space-x-2 cursor-pointer">
             <input
               type="radio"
-              className="form-radio"
+              className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
               name="mode"
               value="assign-unassigned"
               checked={mode === "assign-unassigned"}
               onChange={() => setMode("assign-unassigned")}
               disabled={unassignedCount === 0}
             />
-            <span className="ml-2">
-              Assign unassigned cases ({unassignedCount})
+            <span className="text-sm font-medium text-slate-700">
+              Assign unassigned cases
+              <span className="ml-1 text-blue-600 font-semibold">({unassignedCount})</span>
             </span>
           </label>
         </div>
 
         {mode === "transfer-user" && (
-          <div>
-            <label className="mb-1 block text-sm font-medium">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-slate-700">
               Transfer cases from:
             </label>
             <select
               value={sourceUserId || ""}
               onChange={(e) => setSourceUserId(e.target.value)}
-              className="w-full rounded-md border border-gray-300 p-2"
+              className="w-full rounded-md border border-slate-300 py-2 px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
             >
               <option value="">-- Select source user --</option>
               {users.map((user) => (
@@ -180,17 +196,27 @@ export default function BulkCaseAssignmentForm({
                 </option>
               ))}
             </select>
+
+            {isAdminTransferringSelf && (
+              <div className="flex items-start space-x-2 text-amber-600 text-sm bg-amber-50 p-3 rounded-md border border-amber-200">
+                <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                <p>
+                  <strong>Note:</strong> When transferring cases from your own
+                  account, PERSONAL cases will be excluded from the transfer.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
-        <div>
-          <label className="mb-1 block text-sm font-medium">
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-slate-700">
             {mode === "transfer-user" ? "Transfer to:" : "Assign to:"}
           </label>
           <select
             value={targetUserId}
             onChange={(e) => setTargetUserId(e.target.value)}
-            className="w-full rounded-md border border-gray-300 p-2"
+            className="w-full rounded-md border border-slate-300 py-2 px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
           >
             <option value="">-- Select target user --</option>
             {users.map((user) => (
@@ -205,17 +231,22 @@ export default function BulkCaseAssignmentForm({
           </select>
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-end pt-2">
           <button
             type="submit"
-            className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-blue-300"
+            className="flex items-center justify-center space-x-2 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             disabled={isSubmitting}
           >
-            {isSubmitting
-              ? "Processing..."
-              : mode === "transfer-user"
-              ? "Transfer Cases"
-              : "Assign Unassigned Cases"}
+            {isSubmitting ? (
+              <>
+                <RotateCw className="h-4 w-4 animate-spin" />
+                <span>Processing...</span>
+              </>
+            ) : (
+              <>
+                {mode === "transfer-user" ? "Transfer Cases" : "Assign Unassigned Cases"}
+              </>
+            )}
           </button>
         </div>
       </form>

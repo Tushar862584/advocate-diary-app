@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import {
   groupByDate,
   formatDateHeading,
@@ -20,6 +21,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import React from "react";
 
 interface User {
   id: string;
@@ -63,60 +65,98 @@ export function CaseNotes({
 
     setLoading(true);
 
-    try {
-      const response = await fetch(`/api/cases/${caseId}/notes`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ content }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to add note");
+    toast.promise(
+      addNote(),
+      {
+        loading: 'Adding note...',
+        success: 'Note added successfully',
+        error: (err) => `Failed to add note: ${err.message || 'Please try again'}`,
       }
+    );
 
-      setContent("");
-      router.refresh();
-    } catch (error) {
-      console.error("Error adding note:", error);
-    } finally {
-      setLoading(false);
+    async function addNote() {
+      try {
+        const response = await fetch(`/api/cases/${caseId}/notes`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ content }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to add note");
+        }
+
+        setContent("");
+        router.refresh();
+        setLoading(false);
+        
+        return true; // Resolve the promise successfully
+      } catch (error) {
+        console.error("Error adding note:", error);
+        setLoading(false);
+        throw error; // Reject the promise with the error
+      }
     }
   };
 
-  const handleDelete = async (noteId: string) => {
+  const handleDialogOpenChange = React.useCallback((open: boolean) => {
+    // Don't close the dialog while deletion is in progress
+    if (deleteLoading && !open) return;
+    
+    setDeleteDialogOpen(open);
+    
+    if (!open) {
+      setNoteToDelete(null);
+      setDeleteLoading(false);
+    }
+  }, [deleteLoading]);
+
+  const handleDelete = React.useCallback((noteId: string) => {
     setNoteToDelete(noteId);
     setDeleteDialogOpen(true);
-  };
+  }, []);
 
-  const confirmDelete = async () => {
+  const confirmDelete = React.useCallback(async () => {
     if (!noteToDelete) return;
 
     setDeleteLoading(true);
-    try {
-      const response = await fetch(`/api/notes/${noteToDelete}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete note");
+    
+    toast.promise(
+      deleteNote(),
+      {
+        loading: 'Deleting note...',
+        success: 'Note deleted successfully',
+        error: (err) => `Failed to delete note: ${err.message || 'Please try again'}`,
       }
+    );
 
-      router.refresh();
-    } catch (error) {
-      console.error("Error deleting note:", error);
-    } finally {
-      setDeleteLoading(false);
-      setDeleteDialogOpen(false);
-      setNoteToDelete(null);
+    async function deleteNote() {
+      try {
+        const response = await fetch(`/api/notes/${noteToDelete}`, {
+          method: "DELETE",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to delete note");
+        }
+
+        router.refresh();
+        setDeleteDialogOpen(false);
+        
+        return true; // Resolve the promise successfully
+      } catch (error) {
+        console.error("Error deleting note:", error);
+        setDeleteLoading(false);
+        throw error; // Reject the promise with the error
+      }
     }
-  };
+  }, [noteToDelete, router]);
 
-  const cancelDelete = () => {
+  const cancelDelete = React.useCallback(() => {
     setDeleteDialogOpen(false);
-    setNoteToDelete(null);
-  };
+  }, []);
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query.toLowerCase());
@@ -258,13 +298,16 @@ export function CaseNotes({
 
       <div className="space-y-4">{renderNotes()}</div>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="bg-white border border-slate-200">
+      <AlertDialog 
+        open={deleteDialogOpen} 
+        onOpenChange={handleDialogOpenChange}
+      >
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-slate-800">
+            <AlertDialogTitle>
               Delete Note
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-600">
+            <AlertDialogDescription>
               Are you sure you want to delete this note? This action cannot be
               undone.
             </AlertDialogDescription>
@@ -273,14 +316,13 @@ export function CaseNotes({
             <AlertDialogCancel
               onClick={cancelDelete}
               disabled={deleteLoading}
-              className="border border-slate-300 text-slate-200 hover:bg-slate-100"
             >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               disabled={deleteLoading}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-red-600 hover:bg-red-700"
             >
               {deleteLoading ? "Deleting..." : "Delete"}
             </AlertDialogAction>

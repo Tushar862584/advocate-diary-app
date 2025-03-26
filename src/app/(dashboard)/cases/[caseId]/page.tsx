@@ -8,6 +8,9 @@ import CaseHearings from "@/components/case/CaseHearings";
 import { CaseFiles } from "@/components/cases/case-files";
 import CaseTabs from "@/components/case/CaseTabs";
 import CaseAssignment from "@/components/case/CaseAssignment";
+import ShareButtons from "@/components/ShareButtons";
+import CasePrintButton from "@/components/CasePrintButton";
+import CaseCompletionToggle from "@/components/case/CaseCompletionToggle";
 
 // Define the structure for petitioner and respondent objects
 interface Petitioner {
@@ -94,7 +97,7 @@ export default async function CaseDetailPage({
   return (
     <div className="bg-slate-50">
       <div className="mb-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-100 p-4 rounded-lg border border-slate-200 shadow-sm">
+        <div className="flex flex-col gap-4 bg-slate-100 p-4 rounded-lg border border-slate-200 shadow-sm">
           <div>
             <Link
               href="/cases"
@@ -114,13 +117,84 @@ export default async function CaseDetailPage({
               </svg>
               Back to Cases
             </Link>
-            <h1 className="mt-2 text-2xl font-bold text-slate-800">
-              {caseDetail.caseType}/{caseDetail.registrationNum} -{" "}
-              {caseDetail.title}
-            </h1>
+            <div className="flex justify-between items-center mt-2">
+              <h1 className="text-2xl font-bold text-slate-800">
+                {caseDetail.caseType}/{caseDetail.registrationNum} -{" "}
+                {caseDetail.title}
+              </h1>
+              
+              {/* Show completion status to all users, but only admins can toggle */}
+              <CaseCompletionToggle
+                caseId={caseId}
+                initialStatus={Boolean(caseDetail.isCompleted)}
+                isAdmin={isAdmin}
+              />
+            </div>
           </div>
 
-          <div className="flex-shrink-0">
+          {/* Action buttons moved below the title */}
+          <div className="flex flex-wrap gap-2">
+            {/* Share button - available to all users */}
+            <ShareButtons
+              caseDetail={{
+                title: caseDetail.title,
+                caseType: caseDetail.caseType,
+                registrationNum: String(caseDetail.registrationNum),
+                registrationYear: String(caseDetail.registrationYear),
+
+                // Current hearing data with notes
+                currentHearing:
+                  formattedHearings.length > 0
+                    ? new Date(formattedHearings[0].date)
+                    : null,
+                currentNotes:
+                  formattedHearings.length > 0 && formattedHearings[0].notes
+                    ? formattedHearings[0].notes
+                    : null,
+
+                // Next hearing data
+                nextHearing:
+                  formattedHearings.length > 0 && formattedHearings[0].nextDate
+                    ? new Date(formattedHearings[0].nextDate)
+                    : null,
+                nextPurpose:
+                  formattedHearings.length > 0 &&
+                  formattedHearings[0].nextPurpose
+                    ? formattedHearings[0].nextPurpose
+                    : null,
+              }}
+            />
+
+            {/* Print button - available to all users */}
+            <CasePrintButton
+              caseDetail={{
+                caseType: caseDetail.caseType,
+                registrationYear: caseDetail.registrationYear,
+                registrationNum: caseDetail.registrationNum,
+                title: caseDetail.title,
+                courtName: caseDetail.courtName,
+                isCompleted: caseDetail.isCompleted,
+                user: caseDetail.user,
+                notes: caseDetail.notes.map(note => ({
+                  id: note.id,
+                  content: note.content,
+                  createdAt: note.createdAt,
+                  user: note.user ? { name: note.user.name } : null
+                })),
+                uploads: caseDetail.uploads.map(file => ({
+                  id: file.id,
+                  fileName: file.fileName,
+                  fileUrl: file.fileUrl,
+                  fileType: file.fileType,
+                  createdAt: file.createdAt
+                }))
+              }}
+              formattedHearings={formattedHearings}
+              petitioners={petitioners}
+              respondents={respondents}
+            />
+
+            {/* Edit button - only visible to admins */}
             {isAdmin && (
               <Link
                 href={`/cases/${caseId}/edit`}
@@ -241,7 +315,7 @@ export default async function CaseDetailPage({
         </div>
       )}
 
-      {/* Replace the old tabs and sections with the new CaseTabs component */}
+      {/* Tabs Section */}
       <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-1">
         <CaseTabs
           caseId={caseId}
@@ -264,6 +338,7 @@ export default async function CaseDetailPage({
               caseId={caseId}
               files={caseDetail.uploads}
               canUpload={canEdit}
+              currentUserId={session.user?.id || ""}
             />
           }
         />

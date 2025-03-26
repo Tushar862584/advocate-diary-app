@@ -1,8 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface DeleteCaseButtonProps {
   caseId: string;
@@ -12,40 +23,59 @@ interface DeleteCaseButtonProps {
 export default function DeleteCaseButton({ caseId, isOwner }: DeleteCaseButtonProps) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
-  const openDeleteConfirm = () => {
-    setShowConfirm(true);
-  };
-
-  const closeDeleteConfirm = () => {
-    setShowConfirm(false);
-  };
-
-  const handleDelete = async () => {
-    try {
-      setIsDeleting(true);
-      
-      const response = await fetch(`/api/cases/${caseId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to delete case");
-      }
-
-      // Navigate back to cases list after successful deletion
-      setShowConfirm(false);
-      router.push("/cases");
-      router.refresh();
-    } catch (error) {
-      console.error("Error deleting case:", error);
-      alert("Failed to delete case. Please try again.");
-    } finally {
+  const handleDialogOpenChange = useCallback((open: boolean) => {
+    // Don't close the dialog while deleting is in progress
+    if (isDeleting && !open) return;
+    
+    setDialogOpen(open);
+    
+    // Reset deleting state when dialog closes
+    if (!open && isDeleting) {
       setIsDeleting(false);
     }
-  };
+  }, [isDeleting]);
+
+  const handleDelete = useCallback(async () => {
+    if (isDeleting) return;
+    
+    setIsDeleting(true);
+    
+    // Use toast.promise to handle the loading, success, and error states
+    toast.promise(
+      deleteCase(),
+      {
+        loading: 'Deleting case...',
+        success: 'Case deleted successfully',
+        error: (err) => `Failed to delete case: ${err.message || 'Please try again'}`,
+      }
+    );
+    
+    async function deleteCase() {
+      try {
+        const response = await fetch(`/api/cases/${caseId}`, {
+          method: "DELETE",
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || "Failed to delete case");
+        }
+
+        // Close dialog and navigate back to cases list
+        setDialogOpen(false);
+        router.push("/cases");
+        router.refresh();
+        
+        return true; // Resolve the promise successfully
+      } catch (error) {
+        console.error("Error deleting case:", error);
+        setIsDeleting(false);
+        throw error; // Reject the promise with the error
+      }
+    }
+  }, [caseId, router, isDeleting]);
 
   if (!isOwner) return null;
   
@@ -55,7 +85,7 @@ export default function DeleteCaseButton({ caseId, isOwner }: DeleteCaseButtonPr
   return (
     <>
       <button
-        onClick={openDeleteConfirm}
+        onClick={() => setDialogOpen(true)}
         disabled={isDeleting}
         className={isMobileView 
           ? "flex-1 flex justify-center items-center py-2 rounded-md text-red-400 hover:bg-slate-700 hover:text-red-300 border border-slate-700"
@@ -67,31 +97,26 @@ export default function DeleteCaseButton({ caseId, isOwner }: DeleteCaseButtonPr
         {isMobileView && <span className="text-xs ml-1">Delete</span>}
       </button>
       
-      {showConfirm && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-800 rounded-lg shadow-xl max-w-md w-full p-6 border border-slate-700">
-            <h3 className="text-lg font-medium text-slate-100 mb-4">Delete Case</h3>
-            <p className="text-slate-300 mb-6">
+      <AlertDialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Case</AlertDialogTitle>
+            <AlertDialogDescription>
               Are you sure you want to delete this case? This action cannot be undone.
-            </p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={closeDeleteConfirm}
-                className="px-4 py-2 border border-slate-600 rounded-md text-slate-300 bg-slate-700 hover:bg-slate-600 focus:outline-none"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none disabled:opacity-50"
-              >
-                {isDeleting ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-500"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

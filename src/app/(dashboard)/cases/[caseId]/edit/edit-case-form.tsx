@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import CourtSelector from "@/components/court-selector";
 
 interface Petitioner {
   id: string;
@@ -33,10 +35,10 @@ interface EditCaseFormProps {
   respondents: Respondent[];
 }
 
-export default function EditCaseForm({ 
-  caseDetail, 
-  petitioners: initialPetitioners, 
-  respondents: initialRespondents 
+export default function EditCaseForm({
+  caseDetail,
+  petitioners: initialPetitioners,
+  respondents: initialRespondents,
 }: EditCaseFormProps) {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -46,35 +48,61 @@ export default function EditCaseForm({
     title: caseDetail.title,
     courtName: caseDetail.courtName,
   });
-  
-  const [petitioners, setPetitioners] = useState<Array<{ id?: string; name: string; advocate: string; isNew?: boolean; isDeleted?: boolean }>>(
-    initialPetitioners.map(p => ({ 
-      id: p.id, 
-      name: p.name, 
-      advocate: p.advocate || "" 
+
+  const [petitioners, setPetitioners] = useState<
+    Array<{
+      id?: string;
+      name: string;
+      advocate: string;
+      isNew?: boolean;
+      isDeleted?: boolean;
+    }>
+  >(
+    initialPetitioners.map((p) => ({
+      id: p.id,
+      name: p.name,
+      advocate: p.advocate || "",
     }))
   );
-  
-  const [respondents, setRespondents] = useState<Array<{ id?: string; name: string; advocate: string; isNew?: boolean; isDeleted?: boolean }>>(
-    initialRespondents.map(r => ({ 
-      id: r.id, 
-      name: r.name, 
-      advocate: r.advocate || "" 
+
+  const [respondents, setRespondents] = useState<
+    Array<{
+      id?: string;
+      name: string;
+      advocate: string;
+      isNew?: boolean;
+      isDeleted?: boolean;
+    }>
+  >(
+    initialRespondents.map((r) => ({
+      id: r.id,
+      name: r.name,
+      advocate: r.advocate || "",
     }))
   );
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: name === "registrationYear" || name === "registrationNum"
-        ? parseInt(value) || 0
-        : value
+      [name]:
+        name === "registrationYear" || name === "registrationNum"
+          ? parseInt(value) || 0
+          : value,
+    }));
+  };
+
+  const handleCourtNameChange = (courtName: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      courtName,
     }));
   };
 
@@ -84,14 +112,14 @@ export default function EditCaseForm({
 
   const removePetitioner = (index: number) => {
     const newPetitioners = [...petitioners];
-    
+
     // If it's an existing petitioner, mark as deleted instead of removing
     if (newPetitioners[index].id) {
       newPetitioners[index].isDeleted = true;
     } else {
       newPetitioners.splice(index, 1);
     }
-    
+
     setPetitioners(newPetitioners);
   };
 
@@ -107,14 +135,14 @@ export default function EditCaseForm({
 
   const removeRespondent = (index: number) => {
     const newRespondents = [...respondents];
-    
+
     // If it's an existing respondent, mark as deleted instead of removing
     if (newRespondents[index].id) {
       newRespondents[index].isDeleted = true;
     } else {
       newRespondents.splice(index, 1);
     }
-    
+
     setRespondents(newRespondents);
   };
 
@@ -138,27 +166,27 @@ export default function EditCaseForm({
         body: JSON.stringify({
           ...formData,
           petitioners: petitioners
-            .filter(p => !p.isDeleted)
-            .map(p => ({
+            .filter((p) => !p.isDeleted)
+            .map((p) => ({
               id: p.id,
               name: p.name,
               advocate: p.advocate || null,
               isNew: p.isNew || false,
             })),
           respondents: respondents
-            .filter(r => !r.isDeleted)
-            .map(r => ({
+            .filter((r) => !r.isDeleted)
+            .map((r) => ({
               id: r.id,
               name: r.name,
               advocate: r.advocate || null,
               isNew: r.isNew || false,
             })),
           petitionersToDelete: petitioners
-            .filter(p => p.isDeleted && p.id)
-            .map(p => p.id as string),
+            .filter((p) => p.isDeleted && p.id)
+            .map((p) => p.id as string),
           respondentsToDelete: respondents
-            .filter(r => r.isDeleted && r.id)
-            .map(r => r.id as string),
+            .filter((r) => r.isDeleted && r.id)
+            .map((r) => r.id as string),
         }),
       });
 
@@ -201,16 +229,16 @@ export default function EditCaseForm({
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
         <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-500">
           {error}
         </div>
       )}
-      
-      <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label htmlFor="caseType" className="mb-1 block text-sm font-medium">
+          <label htmlFor="caseType" className="block text-sm font-medium mb-1">
             Case Type
           </label>
           <input
@@ -223,9 +251,9 @@ export default function EditCaseForm({
             required
           />
         </div>
-        
+
         <div>
-          <label htmlFor="title" className="mb-1 block text-sm font-medium">
+          <label htmlFor="title" className="block text-sm font-medium mb-1">
             Case Title
           </label>
           <input
@@ -238,9 +266,12 @@ export default function EditCaseForm({
             required
           />
         </div>
-        
+
         <div>
-          <label htmlFor="registrationYear" className="mb-1 block text-sm font-medium">
+          <label
+            htmlFor="registrationYear"
+            className="block text-sm font-medium mb-1"
+          >
             Registration Year
           </label>
           <input
@@ -253,9 +284,12 @@ export default function EditCaseForm({
             required
           />
         </div>
-        
+
         <div>
-          <label htmlFor="registrationNum" className="mb-1 block text-sm font-medium">
+          <label
+            htmlFor="registrationNum"
+            className="block text-sm font-medium mb-1"
+          >
             Registration Number
           </label>
           <input
@@ -268,23 +302,22 @@ export default function EditCaseForm({
             required
           />
         </div>
-        
+
         <div>
-          <label htmlFor="courtName" className="mb-1 block text-sm font-medium">
+          <label htmlFor="courtName" className="block text-sm font-medium mb-1">
             Court Name
           </label>
-          <input
-            type="text"
+          <CourtSelector
             id="courtName"
             name="courtName"
             value={formData.courtName}
-            onChange={handleInputChange}
-            className="w-full rounded-md border border-gray-300 p-2"
+            onChange={handleCourtNameChange}
             required
+            disabled={isSubmitting}
           />
         </div>
       </div>
-      
+
       <div className="mb-6">
         <div className="mb-2 flex items-center justify-between">
           <h3 className="text-lg font-medium">Petitioners</h3>
@@ -296,47 +329,61 @@ export default function EditCaseForm({
             Add Petitioner
           </button>
         </div>
-        
-        {petitioners.map((petitioner, index) => (
-          !petitioner.isDeleted && (
-            <div key={index} className="mb-4 rounded-md border border-gray-200 bg-gray-50 p-4">
-              <div className="mb-3 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-sm font-medium">Name</label>
-                  <input
-                    type="text"
-                    value={petitioner.name}
-                    onChange={(e) => updatePetitioner(index, "name", e.target.value)}
-                    className="w-full rounded-md border border-gray-300 p-2"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">Advocate (Optional)</label>
-                  <input
-                    type="text"
-                    value={petitioner.advocate}
-                    onChange={(e) => updatePetitioner(index, "advocate", e.target.value)}
-                    className="w-full rounded-md border border-gray-300 p-2"
-                  />
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => removePetitioner(index)}
-                className="text-sm text-red-500 hover:text-red-700"
+
+        {petitioners.map(
+          (petitioner, index) =>
+            !petitioner.isDeleted && (
+              <div
+                key={index}
+                className="mb-4 rounded-md border border-gray-200 bg-gray-50 p-4"
               >
-                Remove
-              </button>
-            </div>
-          )
-        ))}
-        
-        {petitioners.filter(p => !p.isDeleted).length === 0 && (
-          <p className="text-sm text-gray-500">No petitioners added. Please add at least one petitioner.</p>
+                <div className="mb-3 grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      value={petitioner.name}
+                      onChange={(e) =>
+                        updatePetitioner(index, "name", e.target.value)
+                      }
+                      className="w-full rounded-md border border-gray-300 p-2"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">
+                      Advocate (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={petitioner.advocate}
+                      onChange={(e) =>
+                        updatePetitioner(index, "advocate", e.target.value)
+                      }
+                      className="w-full rounded-md border border-gray-300 p-2"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removePetitioner(index)}
+                  className="text-sm text-red-500 hover:text-red-700"
+                >
+                  Remove
+                </button>
+              </div>
+            )
+        )}
+
+        {petitioners.filter((p) => !p.isDeleted).length === 0 && (
+          <p className="text-sm text-gray-500">
+            No petitioners added. Please add at least one petitioner.
+          </p>
         )}
       </div>
-      
+
       <div className="mb-6">
         <div className="mb-2 flex items-center justify-between">
           <h3 className="text-lg font-medium">Respondents</h3>
@@ -348,47 +395,61 @@ export default function EditCaseForm({
             Add Respondent
           </button>
         </div>
-        
-        {respondents.map((respondent, index) => (
-          !respondent.isDeleted && (
-            <div key={index} className="mb-4 rounded-md border border-gray-200 bg-gray-50 p-4">
-              <div className="mb-3 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-sm font-medium">Name</label>
-                  <input
-                    type="text"
-                    value={respondent.name}
-                    onChange={(e) => updateRespondent(index, "name", e.target.value)}
-                    className="w-full rounded-md border border-gray-300 p-2"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">Advocate (Optional)</label>
-                  <input
-                    type="text"
-                    value={respondent.advocate}
-                    onChange={(e) => updateRespondent(index, "advocate", e.target.value)}
-                    className="w-full rounded-md border border-gray-300 p-2"
-                  />
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => removeRespondent(index)}
-                className="text-sm text-red-500 hover:text-red-700"
+
+        {respondents.map(
+          (respondent, index) =>
+            !respondent.isDeleted && (
+              <div
+                key={index}
+                className="mb-4 rounded-md border border-gray-200 bg-gray-50 p-4"
               >
-                Remove
-              </button>
-            </div>
-          )
-        ))}
-        
-        {respondents.filter(r => !r.isDeleted).length === 0 && (
-          <p className="text-sm text-gray-500">No respondents added. Please add at least one respondent.</p>
+                <div className="mb-3 grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      value={respondent.name}
+                      onChange={(e) =>
+                        updateRespondent(index, "name", e.target.value)
+                      }
+                      className="w-full rounded-md border border-gray-300 p-2"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">
+                      Advocate (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={respondent.advocate}
+                      onChange={(e) =>
+                        updateRespondent(index, "advocate", e.target.value)
+                      }
+                      className="w-full rounded-md border border-gray-300 p-2"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeRespondent(index)}
+                  className="text-sm text-red-500 hover:text-red-700"
+                >
+                  Remove
+                </button>
+              </div>
+            )
+        )}
+
+        {respondents.filter((r) => !r.isDeleted).length === 0 && (
+          <p className="text-sm text-gray-500">
+            No respondents added. Please add at least one respondent.
+          </p>
         )}
       </div>
-      
+
       <div className="mt-8 flex items-center justify-between">
         <div>
           <button
@@ -400,7 +461,7 @@ export default function EditCaseForm({
             {isDeleting ? "Deleting..." : "Delete Case"}
           </button>
         </div>
-        
+
         <div>
           <button
             type="button"
@@ -410,7 +471,7 @@ export default function EditCaseForm({
           >
             Cancel
           </button>
-          
+
           <button
             type="submit"
             className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-blue-300"
@@ -425,9 +486,12 @@ export default function EditCaseForm({
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-            <h3 className="mb-4 text-lg font-bold text-gray-900">Confirm Delete</h3>
+            <h3 className="mb-4 text-lg font-bold text-gray-900">
+              Confirm Delete
+            </h3>
             <p className="mb-6 text-gray-700">
-              Are you sure you want to delete this case?<br /> This action cannot be undone.
+              Are you sure you want to delete this case?
+              <br /> This action cannot be undone.
             </p>
             <div className="flex justify-end space-x-4">
               <button
@@ -452,4 +516,4 @@ export default function EditCaseForm({
       )}
     </form>
   );
-} 
+}

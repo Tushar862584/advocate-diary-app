@@ -116,10 +116,16 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
 
   const navItems = [
     {
+      href: "/admin",
+      label: "Admin Dashboard",
+      icon: <LayoutDashboard size={20} strokeWidth={1.75} />,
+      condition: isAdmin,
+    },
+    {
       href: "/cases",
       label: "Cases",
       icon: <Gavel size={20} strokeWidth={1.75} />,
-      condition: true,
+      condition: !isAdmin,
     },
     {
       href: "/chatbot",
@@ -132,12 +138,6 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
       label: "Change Password",
       icon: <Lock size={20} strokeWidth={1.75} />,
       condition: true,
-    },
-    {
-      href: "/admin",
-      label: "Admin Dashboard",
-      icon: <LayoutDashboard size={20} strokeWidth={1.75} />,
-      condition: isAdmin,
     },
     /* {
       href: "/admin/users",

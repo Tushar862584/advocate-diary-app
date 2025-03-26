@@ -126,6 +126,7 @@ export async function PUT(
       respondents,
       petitionersToDelete,
       respondentsToDelete,
+      isCompleted,
     } = data;
     
     // Start a transaction
@@ -139,6 +140,7 @@ export async function PUT(
           registrationNum,
           title,
           courtName,
+          ...(isAdmin && isCompleted !== undefined ? { isCompleted } : {}),
         },
       });
       
@@ -228,6 +230,82 @@ export async function PUT(
     console.error("Error updating case:", error);
     return NextResponse.json(
       { error: "An error occurred while updating the case" },
+      { status: 500 }
+    );
+  }
+}
+
+// PATCH /api/cases/[caseId] - Update specific fields of a case (currently only isCompleted)
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { caseId: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    // Check if user is authenticated
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+    
+    // Only admins can update completion status
+    const isAdmin = session.user.role === "ADMIN";
+    if (!isAdmin) {
+      return NextResponse.json(
+        { error: "Only admins can update case completion status" },
+        { status: 403 }
+      );
+    }
+    
+    const { caseId } = params;
+    const data = await request.json();
+    
+    // Get the case to verify it exists
+    const caseDetail = await prisma.case.findUnique({
+      where: { id: caseId },
+      select: {
+        id: true,
+        isCompleted: true,
+      },
+    });
+    
+    // Check if case exists
+    if (!caseDetail) {
+      return NextResponse.json(
+        { error: "Case not found" },
+        { status: 404 }
+      );
+    }
+    
+    // Extract the isCompleted field from the request body
+    const { isCompleted } = data;
+    
+    // Validate that isCompleted is a boolean
+    if (typeof isCompleted !== 'boolean') {
+      return NextResponse.json(
+        { error: "isCompleted must be a boolean value" },
+        { status: 400 }
+      );
+    }
+    
+    // Update only the isCompleted field
+    const updatedCase = await prisma.case.update({
+      where: { id: caseId },
+      data: { isCompleted },
+      select: {
+        id: true,
+        isCompleted: true,
+      },
+    });
+    
+    return NextResponse.json(updatedCase);
+  } catch (error) {
+    console.error("Error updating case completion status:", error);
+    return NextResponse.json(
+      { error: "An error occurred while updating the case completion status" },
       { status: 500 }
     );
   }

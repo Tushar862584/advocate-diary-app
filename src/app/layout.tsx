@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth-provider";
+import { Toaster } from "sonner";
 
 // Use Outfit as the main font with proper fallbacks
 const outfit = Outfit({
@@ -19,7 +20,7 @@ const outfit = Outfit({
     "Fira Sans",
     "Droid Sans",
     "Helvetica Neue",
-    "sans-serif"
+    "sans-serif",
   ],
 });
 
@@ -36,9 +37,15 @@ export default function RootLayout({
   return (
     <html lang="en" className={outfit.variable}>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+        />
       </head>
-      <body className={`antialiased text-foreground bg-background ${outfit.className}`}>
+      <body
+        className={`antialiased text-foreground bg-background ${outfit.className}`}
+      >
+        <Toaster position="top-center" richColors />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

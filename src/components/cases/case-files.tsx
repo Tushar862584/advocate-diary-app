@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import {
   groupByDate,
   formatDateHeading,
@@ -20,6 +21,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import React from "react";
 
 interface Upload {
   id: string;
@@ -67,72 +69,109 @@ export function CaseFiles({
     const formData = new FormData();
     formData.append("file", file);
 
-    try {
-      const response = await fetch(`/api/cases/${caseId}/upload`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Error uploading file");
+    toast.promise(
+      uploadFile(),
+      {
+        loading: 'Uploading file...',
+        success: 'File uploaded successfully',
+        error: (err) => `Upload failed: ${err.message || 'Please try again'}`,
       }
+    );
 
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+    async function uploadFile() {
+      try {
+        const response = await fetch(`/api/cases/${caseId}/upload`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || "Error uploading file");
+        }
+
+        // Reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+
+        // Refresh the page to show the new file
+        router.refresh();
+        setLoading(false);
+        
+        return true; // Resolve the promise successfully
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        setError(error instanceof Error ? error.message : "Error uploading file");
+        setLoading(false);
+        throw error; // Reject the promise with the error
       }
-
-      // Refresh the page to show the new file
-      router.refresh();
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      setError(error instanceof Error ? error.message : "Error uploading file");
-    } finally {
-      setLoading(false);
     }
   };
 
-  const handleDelete = (fileId: string) => {
+  const handleDialogOpenChange = React.useCallback((open: boolean) => {
+    // Don't close the dialog while deletion is in progress
+    if (deleteLoading && !open) return;
+    
+    setDeleteDialogOpen(open);
+    
+    if (!open) {
+      setFileToDelete(null);
+      setDeleteLoading(false);
+      setError(null);
+    }
+  }, [deleteLoading]);
+
+  const handleDelete = React.useCallback((fileId: string) => {
     if (!canUpload) return; // Only allow deletion if user can upload
     setFileToDelete(fileId);
     setDeleteDialogOpen(true);
-  };
+  }, [canUpload]);
 
-  const confirmDelete = async () => {
+  const confirmDelete = React.useCallback(async () => {
     if (!fileToDelete || !canUpload) return;
 
     setDeleteLoading(true);
-    try {
-      const response = await fetch(`/api/uploads/${fileToDelete}`, {
-        method: "DELETE",
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        console.error("Server error:", result);
-        throw new Error(result.error || "Failed to delete file");
+    
+    toast.promise(
+      deleteFile(),
+      {
+        loading: 'Deleting file...',
+        success: 'File deleted successfully',
+        error: (err) => `Deletion failed: ${err.message || 'Please try again'}`,
       }
+    );
 
-      router.refresh();
-    } catch (error) {
-      console.error("Error deleting file:", error);
-      setError(error instanceof Error ? error.message : "Error deleting file");
-      // Keep the dialog open if there's an error
-      return;
-    } finally {
-      setDeleteLoading(false);
-      setDeleteDialogOpen(false);
-      setFileToDelete(null);
+    async function deleteFile() {
+      try {
+        const response = await fetch(`/api/uploads/${fileToDelete}`, {
+          method: "DELETE",
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          console.error("Server error:", result);
+          throw new Error(result.error || "Failed to delete file");
+        }
+
+        // Close dialog and refresh page
+        router.refresh();
+        setDeleteDialogOpen(false);
+        
+        return true; // Resolve the promise successfully
+      } catch (error) {
+        console.error("Error deleting file:", error);
+        setError(error instanceof Error ? error.message : "Error deleting file");
+        setDeleteLoading(false);
+        throw error; // Reject the promise with the error
+      }
     }
-  };
+  }, [fileToDelete, canUpload, router]);
 
-  const cancelDelete = () => {
+  const cancelDelete = React.useCallback(() => {
     setDeleteDialogOpen(false);
-    setFileToDelete(null);
-    setError(null);
-  };
+  }, []);
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query.toLowerCase());
@@ -315,13 +354,16 @@ export function CaseFiles({
 
       <div className="mt-4">{renderFiles()}</div>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="dark:bg-gray-800 dark:border-gray-700">
+      <AlertDialog 
+        open={deleteDialogOpen} 
+        onOpenChange={handleDialogOpenChange}
+      >
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="dark:text-gray-100">
+            <AlertDialogTitle>
               Delete File
             </AlertDialogTitle>
-            <AlertDialogDescription className="dark:text-gray-300">
+            <AlertDialogDescription>
               Are you sure you want to delete this file? This action cannot be
               undone.
             </AlertDialogDescription>
@@ -330,14 +372,13 @@ export function CaseFiles({
             <AlertDialogCancel
               onClick={cancelDelete}
               disabled={deleteLoading}
-              className="dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
             >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               disabled={deleteLoading}
-              className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
+              className="bg-red-600 hover:bg-red-700"
             >
               {deleteLoading ? "Deleting..." : "Delete"}
             </AlertDialogAction>

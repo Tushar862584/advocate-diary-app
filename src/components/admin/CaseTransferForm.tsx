@@ -191,7 +191,10 @@ export function CaseTransferForm({ users, onSuccess }: CaseTransferFormProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isSubmitting}>
+            <AlertDialogCancel 
+              onClick={() => setShowConfirmDialog(false)}
+              disabled={isSubmitting}
+            >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction

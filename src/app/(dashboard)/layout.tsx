@@ -23,6 +23,17 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  // Pass the session and children to client component
-  return <DashboardClientWrapper>{children}</DashboardClientWrapper>;
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-gray-50 to-gray-100">
+      <DashboardClientWrapper>
+        <main className="min-h-screen p-2 sm:p-4">
+          <div className="mx-auto max-w-7xl">
+            <div className="bg-white/70 backdrop-blur-sm sm:shadow-sm sm:ring-1 sm:ring-gray-200/50 sm:rounded-lg p-2 sm:p-6">
+              {children}
+            </div>
+          </div>
+        </main>
+      </DashboardClientWrapper>
+    </div>
+  );
 }

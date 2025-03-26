@@ -45,18 +45,7 @@ export default function RootLayout({
       <body
         className={`antialiased text-foreground bg-background ${outfit.className} text-[15px] sm:text-base`}
       >
-        <Toaster
-          position="top-center"
-          richColors
-          toastOptions={{
-            style: {
-              maxWidth: "95vw",
-              margin: "0 auto",
-              fontSize: "0.875rem",
-              padding: "0.5rem 0.75rem",
-            },
-          }}
-        />
+        <Toaster position="bottom-right" richColors />
         <AuthProvider>
           <div className="max-w-[100vw] overflow-x-hidden">{children}</div>
         </AuthProvider>

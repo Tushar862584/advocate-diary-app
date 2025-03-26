@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import CourtSelector from "@/components/court-selector";
+import { Trash2, Save, X, UserPlus, UserMinus } from "lucide-react";
 
 interface Petitioner {
   id: string;
@@ -229,14 +230,14 @@ export default function EditCaseForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
       {error && (
-        <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-500">
+        <div className="mb-4 rounded-md bg-red-50 p-3 sm:p-4 text-sm text-red-500">
           {error}
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         <div>
           <label htmlFor="caseType" className="block text-sm font-medium mb-1">
             Case Type
@@ -247,7 +248,7 @@ export default function EditCaseForm({
             name="caseType"
             value={formData.caseType}
             onChange={handleInputChange}
-            className="w-full rounded-md border border-gray-300 p-2"
+            className="w-full rounded-md border border-gray-300 p-2 text-sm"
             required
           />
         </div>
@@ -262,7 +263,7 @@ export default function EditCaseForm({
             name="title"
             value={formData.title}
             onChange={handleInputChange}
-            className="w-full rounded-md border border-gray-300 p-2"
+            className="w-full rounded-md border border-gray-300 p-2 text-sm"
             required
           />
         </div>
@@ -280,7 +281,7 @@ export default function EditCaseForm({
             name="registrationYear"
             value={formData.registrationYear}
             onChange={handleInputChange}
-            className="w-full rounded-md border border-gray-300 p-2"
+            className="w-full rounded-md border border-gray-300 p-2 text-sm"
             required
           />
         </div>
@@ -298,12 +299,12 @@ export default function EditCaseForm({
             name="registrationNum"
             value={formData.registrationNum}
             onChange={handleInputChange}
-            className="w-full rounded-md border border-gray-300 p-2"
+            className="w-full rounded-md border border-gray-300 p-2 text-sm"
             required
           />
         </div>
 
-        <div>
+        <div className="md:col-span-2">
           <label htmlFor="courtName" className="block text-sm font-medium mb-1">
             Court Name
           </label>
@@ -318,14 +319,16 @@ export default function EditCaseForm({
         </div>
       </div>
 
-      <div className="mb-6">
-        <div className="mb-2 flex items-center justify-between">
-          <h3 className="text-lg font-medium">Petitioners</h3>
+      {/* Petitioners Section */}
+      <div className="mt-6 sm:mt-8">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-base sm:text-lg font-medium">Petitioners</h3>
           <button
             type="button"
             onClick={addPetitioner}
-            className="rounded-md bg-blue-50 px-3 py-1 text-sm text-blue-600 hover:bg-blue-100"
+            className="rounded-md bg-blue-50 px-3 py-1.5 text-xs sm:text-sm text-blue-600 hover:bg-blue-100 flex items-center"
           >
+            <UserPlus className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5" />
             Add Petitioner
           </button>
         </div>
@@ -335,11 +338,11 @@ export default function EditCaseForm({
             !petitioner.isDeleted && (
               <div
                 key={index}
-                className="mb-4 rounded-md border border-gray-200 bg-gray-50 p-4"
+                className="mb-3 sm:mb-4 rounded-md border border-gray-200 bg-gray-50 p-3 sm:p-4"
               >
-                <div className="mb-3 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="mb-3 grid grid-cols-1 gap-3 sm:gap-4">
                   <div>
-                    <label className="mb-1 block text-sm font-medium">
+                    <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">
                       Name
                     </label>
                     <input
@@ -348,12 +351,12 @@ export default function EditCaseForm({
                       onChange={(e) =>
                         updatePetitioner(index, "name", e.target.value)
                       }
-                      className="w-full rounded-md border border-gray-300 p-2"
+                      className="w-full rounded-md border border-gray-300 p-2 text-sm"
                       required
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-sm font-medium">
+                    <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">
                       Advocate (Optional)
                     </label>
                     <input
@@ -362,15 +365,16 @@ export default function EditCaseForm({
                       onChange={(e) =>
                         updatePetitioner(index, "advocate", e.target.value)
                       }
-                      className="w-full rounded-md border border-gray-300 p-2"
+                      className="w-full rounded-md border border-gray-300 p-2 text-sm"
                     />
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => removePetitioner(index)}
-                  className="text-sm text-red-500 hover:text-red-700"
+                  className="text-xs sm:text-sm text-red-500 hover:text-red-700 flex items-center"
                 >
+                  <UserMinus className="h-3.5 w-3.5 mr-1" />
                   Remove
                 </button>
               </div>
@@ -378,20 +382,22 @@ export default function EditCaseForm({
         )}
 
         {petitioners.filter((p) => !p.isDeleted).length === 0 && (
-          <p className="text-sm text-gray-500">
+          <p className="text-xs sm:text-sm text-gray-500 italic py-2">
             No petitioners added. Please add at least one petitioner.
           </p>
         )}
       </div>
 
-      <div className="mb-6">
-        <div className="mb-2 flex items-center justify-between">
-          <h3 className="text-lg font-medium">Respondents</h3>
+      {/* Respondents Section */}
+      <div className="mt-6 sm:mt-8">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-base sm:text-lg font-medium">Respondents</h3>
           <button
             type="button"
             onClick={addRespondent}
-            className="rounded-md bg-blue-50 px-3 py-1 text-sm text-blue-600 hover:bg-blue-100"
+            className="rounded-md bg-blue-50 px-3 py-1.5 text-xs sm:text-sm text-blue-600 hover:bg-blue-100 flex items-center"
           >
+            <UserPlus className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5" />
             Add Respondent
           </button>
         </div>
@@ -401,11 +407,11 @@ export default function EditCaseForm({
             !respondent.isDeleted && (
               <div
                 key={index}
-                className="mb-4 rounded-md border border-gray-200 bg-gray-50 p-4"
+                className="mb-3 sm:mb-4 rounded-md border border-gray-200 bg-gray-50 p-3 sm:p-4"
               >
-                <div className="mb-3 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="mb-3 grid grid-cols-1 gap-3 sm:gap-4">
                   <div>
-                    <label className="mb-1 block text-sm font-medium">
+                    <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">
                       Name
                     </label>
                     <input
@@ -414,12 +420,12 @@ export default function EditCaseForm({
                       onChange={(e) =>
                         updateRespondent(index, "name", e.target.value)
                       }
-                      className="w-full rounded-md border border-gray-300 p-2"
+                      className="w-full rounded-md border border-gray-300 p-2 text-sm"
                       required
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-sm font-medium">
+                    <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">
                       Advocate (Optional)
                     </label>
                     <input
@@ -428,15 +434,16 @@ export default function EditCaseForm({
                       onChange={(e) =>
                         updateRespondent(index, "advocate", e.target.value)
                       }
-                      className="w-full rounded-md border border-gray-300 p-2"
+                      className="w-full rounded-md border border-gray-300 p-2 text-sm"
                     />
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => removeRespondent(index)}
-                  className="text-sm text-red-500 hover:text-red-700"
+                  className="text-xs sm:text-sm text-red-500 hover:text-red-700 flex items-center"
                 >
+                  <UserMinus className="h-3.5 w-3.5 mr-1" />
                   Remove
                 </button>
               </div>
@@ -444,70 +451,76 @@ export default function EditCaseForm({
         )}
 
         {respondents.filter((r) => !r.isDeleted).length === 0 && (
-          <p className="text-sm text-gray-500">
+          <p className="text-xs sm:text-sm text-gray-500 italic py-2">
             No respondents added. Please add at least one respondent.
           </p>
         )}
       </div>
 
-      <div className="mt-8 flex items-center justify-between">
-        <div>
-          <button
-            type="button"
-            onClick={() => setShowDeleteConfirm(true)}
-            className="mr-4 rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 disabled:bg-red-300"
-            disabled={isSubmitting || isDeleting}
-          >
-            {isDeleting ? "Deleting..." : "Delete Case"}
-          </button>
-        </div>
+      {/* Mobile-Friendly Form Buttons */}
+      <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+        {/* Delete button - on its own on mobile, left aligned on desktop */}
+        <button
+          type="button"
+          onClick={() => setShowDeleteConfirm(true)}
+          className="rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 disabled:bg-red-300 text-sm flex items-center justify-center sm:justify-start"
+          disabled={isSubmitting || isDeleting}
+        >
+          <Trash2 className="h-4 w-4 mr-2" />
+          {isDeleting ? "Deleting..." : "Delete Case"}
+        </button>
 
-        <div>
+        {/* Action buttons stack on mobile, right aligned on desktop */}
+        <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
           <button
             type="button"
             onClick={() => router.back()}
-            className="mr-4 rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50"
+            className="rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50 text-sm flex items-center justify-center"
             disabled={isSubmitting}
           >
+            <X className="h-4 w-4 mr-2" />
             Cancel
           </button>
 
           <button
             type="submit"
-            className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-blue-300"
+            className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-blue-300 text-sm flex items-center justify-center"
             disabled={isSubmitting}
           >
+            <Save className="h-4 w-4 mr-2" />
             {isSubmitting ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Confirmation Modal - improved for mobile */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-            <h3 className="mb-4 text-lg font-bold text-gray-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="w-full max-w-sm sm:max-w-md rounded-lg bg-white p-4 sm:p-6 shadow-lg">
+            <h3 className="mb-2 sm:mb-4 text-base sm:text-lg font-bold text-gray-900">
               Confirm Delete
             </h3>
-            <p className="mb-6 text-gray-700">
+            <p className="mb-4 sm:mb-6 text-sm text-gray-700">
               Are you sure you want to delete this case?
               <br /> This action cannot be undone.
             </p>
-            <div className="flex justify-end space-x-4">
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-4">
               <button
                 type="button"
                 onClick={() => setShowDeleteConfirm(false)}
-                className="rounded-md border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50"
+                className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center justify-center"
                 disabled={isDeleting}
               >
+                <X className="h-4 w-4 mr-2" />
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleDelete}
-                className="rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 disabled:bg-red-300"
+                className="rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 disabled:bg-red-300 flex items-center justify-center"
                 disabled={isDeleting}
               >
+                <Trash2 className="h-4 w-4 mr-2" />
                 {isDeleting ? "Deleting..." : "Delete Case"}
               </button>
             </div>

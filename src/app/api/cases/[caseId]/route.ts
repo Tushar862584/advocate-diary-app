@@ -10,17 +10,14 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     // Check if user is authenticated
     if (!session || !session.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    
+
     const { caseId } = params;
-    
+
     // Get the case with details
     const caseDetail = await prisma.case.findUnique({
       where: { id: caseId },
@@ -39,26 +36,23 @@ export async function GET(
         },
       },
     });
-    
+
     // Check if case exists
     if (!caseDetail) {
-      return NextResponse.json(
-        { error: "Case not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Case not found" }, { status: 404 });
     }
-    
+
     // Check if user is the owner or an admin
     const isAdmin = session.user.role === "ADMIN";
     const isOwner = caseDetail.userId === session.user.id;
-    
+
     if (!isAdmin && !isOwner) {
       return NextResponse.json(
         { error: "You do not have permission to view this case" },
         { status: 403 }
       );
     }
-    
+
     return NextResponse.json(caseDetail);
   } catch (error) {
     console.error("Error getting case:", error);
@@ -76,18 +70,15 @@ export async function PUT(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     // Check if user is authenticated
     if (!session || !session.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    
+
     const { caseId } = params;
     const data = await request.json();
-    
+
     // Get the case to verify ownership
     const caseDetail = await prisma.case.findUnique({
       where: { id: caseId },
@@ -95,26 +86,23 @@ export async function PUT(
         userId: true,
       },
     });
-    
+
     // Check if case exists
     if (!caseDetail) {
-      return NextResponse.json(
-        { error: "Case not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Case not found" }, { status: 404 });
     }
-    
+
     // Check if user is the owner or an admin
     const isAdmin = session.user.role === "ADMIN";
     const isOwner = caseDetail.userId === session.user.id;
-    
+
     if (!isAdmin && !isOwner) {
       return NextResponse.json(
         { error: "You do not have permission to update this case" },
         { status: 403 }
       );
     }
-    
+
     // Extract and validate the input
     const {
       caseType,
@@ -128,7 +116,7 @@ export async function PUT(
       respondentsToDelete,
       isCompleted,
     } = data;
-    
+
     // Start a transaction
     const updatedCase = await prisma.$transaction(async (tx) => {
       // Update the case
@@ -143,7 +131,7 @@ export async function PUT(
           ...(isAdmin && isCompleted !== undefined ? { isCompleted } : {}),
         },
       });
-      
+
       // Delete petitioners marked for deletion
       if (petitionersToDelete && petitionersToDelete.length > 0) {
         await tx.petitioner.deleteMany({
@@ -155,7 +143,7 @@ export async function PUT(
           },
         });
       }
-      
+
       // Delete respondents marked for deletion
       if (respondentsToDelete && respondentsToDelete.length > 0) {
         await tx.respondent.deleteMany({
@@ -167,7 +155,7 @@ export async function PUT(
           },
         });
       }
-      
+
       // Update existing and create new petitioners
       for (const petitioner of petitioners) {
         if (petitioner.isNew) {
@@ -194,7 +182,7 @@ export async function PUT(
           });
         }
       }
-      
+
       // Update existing and create new respondents
       for (const respondent of respondents) {
         if (respondent.isNew) {
@@ -221,10 +209,10 @@ export async function PUT(
           });
         }
       }
-      
+
       return updated;
     });
-    
+
     return NextResponse.json(updatedCase);
   } catch (error) {
     console.error("Error updating case:", error);
@@ -242,15 +230,12 @@ export async function PATCH(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     // Check if user is authenticated
     if (!session || !session.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    
+
     // Only admins can update completion status
     const isAdmin = session.user.role === "ADMIN";
     if (!isAdmin) {
@@ -259,10 +244,10 @@ export async function PATCH(
         { status: 403 }
       );
     }
-    
-    const { caseId } = params;
+
+    const { caseId } = await params;
     const data = await request.json();
-    
+
     // Get the case to verify it exists
     const caseDetail = await prisma.case.findUnique({
       where: { id: caseId },
@@ -271,26 +256,23 @@ export async function PATCH(
         isCompleted: true,
       },
     });
-    
+
     // Check if case exists
     if (!caseDetail) {
-      return NextResponse.json(
-        { error: "Case not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Case not found" }, { status: 404 });
     }
-    
+
     // Extract the isCompleted field from the request body
     const { isCompleted } = data;
-    
+
     // Validate that isCompleted is a boolean
-    if (typeof isCompleted !== 'boolean') {
+    if (typeof isCompleted !== "boolean") {
       return NextResponse.json(
         { error: "isCompleted must be a boolean value" },
         { status: 400 }
       );
     }
-    
+
     // Update only the isCompleted field
     const updatedCase = await prisma.case.update({
       where: { id: caseId },
@@ -300,7 +282,7 @@ export async function PATCH(
         isCompleted: true,
       },
     });
-    
+
     return NextResponse.json(updatedCase);
   } catch (error) {
     console.error("Error updating case completion status:", error);
@@ -318,17 +300,14 @@ export async function DELETE(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     // Check if user is authenticated
     if (!session || !session.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    
+
     const { caseId } = params;
-    
+
     // Get the case to verify ownership
     const caseDetail = await prisma.case.findUnique({
       where: { id: caseId },
@@ -336,31 +315,28 @@ export async function DELETE(
         userId: true,
       },
     });
-    
+
     // Check if case exists
     if (!caseDetail) {
-      return NextResponse.json(
-        { error: "Case not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Case not found" }, { status: 404 });
     }
-    
+
     // Check if user is the owner or an admin
     const isAdmin = session.user.role === "ADMIN";
     const isOwner = caseDetail.userId === session.user.id;
-    
+
     if (!isAdmin && !isOwner) {
       return NextResponse.json(
         { error: "You do not have permission to delete this case" },
         { status: 403 }
       );
     }
-    
+
     // Delete the case (cascade will handle related records)
     await prisma.case.delete({
       where: { id: caseId },
     });
-    
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting case:", error);

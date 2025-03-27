@@ -24,11 +24,11 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-gray-50 to-gray-100">
+    <div className="min-h-screen bg-[#FAF7F0]">
       <DashboardClientWrapper>
         <main className="min-h-screen p-0">
           <div className="mx-auto max-w-full md:max-w-7xl">
-            <div className="bg-white sm:bg-white/70 sm:backdrop-blur-sm sm:shadow-sm sm:ring-1 sm:ring-gray-200/50 rounded-none sm:rounded-lg p-0.5 sm:p-3 md:p-6">
+            <div className="sm:bg-white/80 sm:backdrop-blur-sm sm:shadow-sm sm:ring-1 sm:ring-gray-200/50 rounded-none sm:rounded-lg p-0.5 sm:p-3 md:p-6">
               {children}
             </div>
           </div>

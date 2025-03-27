@@ -139,7 +139,7 @@ export default function FilteredCases({
   return (
     <div className="w-full max-w-full px-0 sm:px-4">
       {/* Filter bar - make it scroll horizontally on small screens */}
-      <div className="bg-white border-b overflow-x-auto hide-scrollbar">
+      <div className="border-b overflow-x-auto hide-scrollbar">
         <div className="min-w-max flex space-x-1 p-2">
           {/* Status filter tabs */}
           <button
@@ -340,7 +340,7 @@ export default function FilteredCases({
               </div>
             </div>
 
-            {/* Mobile Layout - Card View Only */}
+            {/* Mobile Layout - Card View Only
             <div className="space-y-3 sm:hidden">
               {cases.map((caseItem) => (
                 <div
@@ -388,6 +388,95 @@ export default function FilteredCases({
                   </div>
 
                   <div className="grid grid-cols-2 p-2 gap-2">
+                    <div className="grid grid-cols-2 gap-1">
+                      <Link
+                        href={`/cases/${caseItem.id}`}
+                        className="flex justify-center items-center py-2 rounded-md text-blue-400 hover:bg-slate-700 hover:text-blue-300 border border-slate-700"
+                        prefetch={false}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        <span className="text-xs">View</span>
+                      </Link>
+
+                      {isAdmin && (
+                        <Link
+                          href={`/cases/${caseItem.id}/edit`}
+                          className="flex justify-center items-center py-2 rounded-md text-amber-400 hover:bg-slate-700 hover:text-amber-300 border border-slate-700"
+                          prefetch={false}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          <span className="text-xs">Edit</span>
+                        </Link>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-1">
+                      {isAdmin && (
+                        <>
+                          <CaseAssignButton
+                            caseId={caseItem.id}
+                            isAssigned={Boolean(caseItem.userId)}
+                          />
+                          <DeleteCaseButton
+                            caseId={caseItem.id}
+                            isOwner={caseItem.userId === userId || isAdmin}
+                          />
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div> */}
+
+            {/* Mobile Layout - Card View Only */}
+            <div className="space-y-3 sm:hidden">
+              {cases.map((caseItem) => (
+                <div
+                  key={caseItem.id}
+                  className="bg-slate-800 border border-slate-700 rounded-lg overflow-hidden shadow-sm"
+                >
+                  <div className="p-3 border-b border-slate-700 bg-slate-800">
+                    <div>
+                      <h3 className="font-medium text-blue-400 flex items-center text-sm">
+                        <span className="truncate">{caseItem.caseType}</span>
+                        <span className="ml-1 text-xs text-slate-400 whitespace-nowrap">
+                          #{caseItem.registrationNum}/
+                          {caseItem.registrationYear}
+                        </span>
+                      </h3>
+                      <p className="text-sm text-slate-200 mt-1.5 line-clamp-2">
+                        {caseItem.title}
+                      </p>
+                    </div>
+
+                    <div className="text-xs text-slate-400 mt-2">
+                      <div className="flex items-start">
+                        <span className="font-medium mr-1 whitespace-nowrap">
+                          Court:
+                        </span>
+                        <span className="line-clamp-1">
+                          {caseItem.courtName}
+                        </span>
+                      </div>
+                      <div className="flex items-start mt-1">
+                        <span className="font-medium mr-1 whitespace-nowrap">
+                          Parties:
+                        </span>
+                        <span className="line-clamp-1">
+                          {caseItem.petitioners
+                            .map((p: { name: string }) => p.name)
+                            .join(", ")}{" "}
+                          vs{" "}
+                          {caseItem.respondents
+                            .map((r: { name: string }) => r.name)
+                            .join(", ")}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 p-2 gap-2 bg-slate-800">
                     <div className="grid grid-cols-2 gap-1">
                       <Link
                         href={`/cases/${caseItem.id}`}

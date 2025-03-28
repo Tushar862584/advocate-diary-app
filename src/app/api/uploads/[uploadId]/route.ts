@@ -14,7 +14,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const uploadId = params.uploadId;
+    const uploadId = await params.uploadId;
     if (!uploadId) {
       return NextResponse.json(
         { error: "Upload ID is required" },
@@ -37,7 +37,7 @@ export async function DELETE(
     // Check permission to delete the file
     const userId = session.user.id as string;
     const isAdmin = session.user.role === "ADMIN";
-    
+
     // Different permission logic based on whether it's a personal file or case file
     if (upload.caseId && upload.case) {
       // Case file: check if user owns the case
@@ -63,7 +63,7 @@ export async function DELETE(
     // Determine which bucket the file is in
     let bucketName = "case-files";
     let pathMatch;
-    
+
     if (upload.fileUrl.includes("personal-files")) {
       bucketName = "personal-files";
       pathMatch = upload.fileUrl.match(/personal-files\/([^?#]+)/);

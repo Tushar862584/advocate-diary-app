@@ -1,37 +1,37 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { use } from "react";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import {
-  ArrowLeft,
-  Edit,
   FileText,
+  Edit,
+  ArrowLeft,
+  Upload,
   Download,
   Trash2,
-  Upload,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
 import { toast } from "sonner";
-
-// Types remain the same...
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/Card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { use } from "react";
 
 type PersonalInfo = {
   id: string;
@@ -69,92 +69,65 @@ export default function UserPersonalInfoPage({
 }) {
   const resolvedParams = use(params);
   const userId = resolvedParams.userId;
-  const router = useRouter();
   const pageRef = useRef<HTMLDivElement>(null);
 
-  // State for files, loading, etc.
   const [user, setUser] = useState<User | null>(null);
   const [personalFiles, setPersonalFiles] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const router = useRouter();
 
-  // Handle scroll lock for mobile
   useEffect(() => {
-    const originalStyle = window.getComputedStyle(document.body).overflow;
-
-    // Helper function to check if scrolling is needed
-    const needsScrollLock = () => {
-      if (!pageRef.current) return false;
-      return pageRef.current.scrollHeight > window.innerHeight;
-    };
-
-    // Apply scroll behavior
-    const applyScrollBehavior = () => {
-      // On mobile, we want to contain scrolling within our component
-      if (window.innerWidth < 640 && needsScrollLock()) {
-        document.body.style.overflow = "hidden";
-
-        if (pageRef.current) {
-          pageRef.current.style.height = "100vh";
-          pageRef.current.style.overflowY = "auto";
-          pageRef.current.style.WebkitOverflowScrolling = "touch";
-        }
-      } else {
-        document.body.style.overflow = originalStyle;
-
-        if (pageRef.current) {
-          pageRef.current.style.height = "auto";
-          pageRef.current.style.overflowY = "visible";
-        }
-      }
-    };
-
-    // Apply initially and on resize
-    applyScrollBehavior();
-    window.addEventListener("resize", applyScrollBehavior);
-
-    // Fetch user data
-    const fetchUserData = async () => {
-      setIsLoading(true);
+    const fetchData = async () => {
       try {
-        const response = await fetch(
-          `/api/admin/users/${userId}?includePersonal=true`
-        );
+        console.log(`Starting fetch for user ID: ${userId}`);
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch user data");
-        }
-
-        const userData = await response.json();
-        setUser(userData);
-
-        // Set personal files if available
-        if (userData.uploads) {
-          setPersonalFiles(
-            userData.uploads.filter((upload: any) => upload.caseId === null)
+        // Fetch user details
+        const userResponse = await fetch(`/api/admin/users/${userId}`);
+        if (!userResponse.ok) {
+          console.error(
+            `Failed to fetch user details: ${userResponse.status} ${userResponse.statusText}`
           );
+          toast.error("Failed to load user details");
+          setLoading(false);
+          return;
         }
-      } catch (err) {
-        console.error("Error fetching user data:", err);
-        setError("Failed to load user data");
+
+        const userData = await userResponse.json();
+        console.log("User data fetched:", userData);
+        setUser(userData.user);
+
+        // Fetch personal files
+        console.log(`Fetching personal files for user: ${userId}`);
+        const filesResponse = await fetch(
+          `/api/admin/personal-files?userId=${userId}`
+        );
+        if (filesResponse.ok) {
+          const filesData = await filesResponse.json();
+          console.log("Personal files response:", filesData);
+          setPersonalFiles(filesData.personalFiles || []);
+        } else {
+          console.error(
+            `Failed to fetch personal files: ${filesResponse.status} ${filesResponse.statusText}`
+          );
+          const errorText = await filesResponse.text();
+          console.error("Error response:", errorText);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        toast.error("An error occurred while loading data");
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
-    fetchUserData();
-
-    return () => {
-      // Cleanup scroll lock and event listener
-      document.body.style.overflow = originalStyle;
-      window.removeEventListener("resize", applyScrollBehavior);
-    };
+    if (userId) {
+      fetchData();
+    }
   }, [userId]);
 
-  // Handle file deletion
   const handleDeleteFile = async () => {
     if (!selectedFile) return;
 
@@ -164,47 +137,51 @@ export default function UserPersonalInfoPage({
         method: "DELETE",
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to delete file");
+      if (response.ok) {
+        toast.success("File deleted successfully");
+        // Remove the file from the state
+        setPersonalFiles((prev) =>
+          prev.filter((file) => file.id !== selectedFile)
+        );
+      } else {
+        toast.error("Failed to delete file");
       }
-
-      // Update UI by removing the deleted file
-      setPersonalFiles(
-        personalFiles.filter((file) => file.id !== selectedFile)
-      );
-
-      toast.success("File deleted successfully");
-    } catch (err) {
-      console.error("Error deleting file:", err);
-      toast.error("Failed to delete file");
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      toast.error("An error occurred while deleting the file");
     } finally {
-      setIsDeleting(false);
       setDeleteConfirm(false);
       setSelectedFile(null);
+      setIsDeleting(false);
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="flex justify-center items-center h-60">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-slate-800"></div>
+      <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[50vh]">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+          <p className="mt-2 text-slate-600">Loading user information...</p>
+        </div>
       </div>
     );
   }
 
-  if (error || !user) {
+  if (!user) {
     return (
-      <div className="text-center p-8 bg-red-50 rounded-lg border border-red-200">
-        <p className="text-red-600 font-medium">
-          {error || "Failed to load user data"}
-        </p>
-        <Button
-          onClick={() => router.push("/admin/personal-info")}
-          variant="outline"
-          className="mt-4"
-        >
-          Back to Users
-        </Button>
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-slate-800">
+            User not found
+          </h2>
+          <Button
+            onClick={() => router.push("/admin/personal-info")}
+            className="mt-4"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to All Users
+          </Button>
+        </div>
       </div>
     );
   }
@@ -222,7 +199,7 @@ export default function UserPersonalInfoPage({
             </div>
             <Button
               onClick={() => router.push("/admin/personal-info")}
-              variant="outline"
+              variant="link"
               size="sm"
               className="text-sm self-start sm:self-auto"
             >
@@ -360,7 +337,7 @@ export default function UserPersonalInfoPage({
                       <div className="flex space-x-1 self-end sm:self-auto">
                         <Button
                           variant="outline"
-                          size="sm"
+                          size="icon"
                           className="h-8 w-8 p-0 text-slate-500"
                           onClick={() => window.open(file.fileUrl, "_blank")}
                         >
@@ -368,8 +345,8 @@ export default function UserPersonalInfoPage({
                           <span className="sr-only">Download</span>
                         </Button>
                         <Button
-                          variant="outline"
-                          size="sm"
+                          variant="destructive"
+                          size="icon"
                           className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:border-red-300"
                           onClick={() => {
                             setSelectedFile(file.id);
@@ -405,33 +382,27 @@ export default function UserPersonalInfoPage({
       </div>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteConfirm} onOpenChange={setDeleteConfirm}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>
+      <AlertDialog open={deleteConfirm} onOpenChange={setDeleteConfirm}>
+        <AlertDialogContent className="sm:max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogDescription>
               Are you sure you want to delete this file? This action cannot be
               undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              variant="outline"
-              onClick={() => setDeleteConfirm(false)}
-              disabled={isDeleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-0 flex-col sm:flex-row">
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
               onClick={handleDeleteFile}
+              className="bg-red-600 hover:bg-red-700"
               disabled={isDeleting}
             >
               {isDeleting ? "Deleting..." : "Delete"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

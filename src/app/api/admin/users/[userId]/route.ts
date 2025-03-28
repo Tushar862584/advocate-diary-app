@@ -106,13 +106,10 @@ export async function GET(
     const session = await getServerSession(authOptions);
 
     if (!session || session.user?.role !== "ADMIN") {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { userId } = params;
+    const { userId } = await params;
     if (!userId) {
       return NextResponse.json(
         { error: "User ID is required" },
@@ -126,17 +123,14 @@ export async function GET(
         personalInfo: true,
         uploads: {
           orderBy: {
-            createdAt: 'desc',
+            createdAt: "desc",
           },
         },
       },
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     return NextResponse.json({ user });

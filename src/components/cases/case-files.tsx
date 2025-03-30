@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2 } from "lucide-react";
+import { Trash2, Edit2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   groupByDate,
@@ -21,6 +21,15 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import React from "react";
 
 interface Upload {
@@ -58,6 +67,12 @@ export function CaseFiles({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  
+  // Add new state for rename functionality
+  const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+  const [fileToRename, setFileToRename] = useState<Upload | null>(null);
+  const [newFileName, setNewFileName] = useState("");
+  const [renameLoading, setRenameLoading] = useState(false);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -192,6 +207,65 @@ export function CaseFiles({
     return "📎";
   };
 
+  const handleRename = React.useCallback((file: Upload) => {
+    if (!canUpload) return; // Only allow rename if user can upload
+    setFileToRename(file);
+    setNewFileName(file.fileName);
+    setRenameDialogOpen(true);
+  }, [canUpload]);
+
+  const confirmRename = React.useCallback(async () => {
+    if (!fileToRename || !canUpload || !newFileName.trim()) return;
+
+    setRenameLoading(true);
+    
+    toast.promise(
+      renameFile(),
+      {
+        loading: 'Renaming file...',
+        success: 'File renamed successfully',
+        error: (err) => `Rename failed: ${err.message || 'Please try again'}`,
+      }
+    );
+
+    async function renameFile() {
+      try {
+        const response = await fetch(`/api/uploads/${fileToRename.id}/rename`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ fileName: newFileName.trim() }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          console.error("Server error:", result);
+          throw new Error(result.error || "Failed to rename file");
+        }
+
+        // Close dialog and refresh page
+        router.refresh();
+        setRenameDialogOpen(false);
+        
+        return true; // Resolve the promise successfully
+      } catch (error) {
+        console.error("Error renaming file:", error);
+        setError(error instanceof Error ? error.message : "Error renaming file");
+        setRenameLoading(false);
+        throw error; // Reject the promise with the error
+      }
+    }
+  }, [fileToRename, canUpload, router, newFileName]);
+
+  const cancelRename = React.useCallback(() => {
+    setRenameDialogOpen(false);
+    setFileToRename(null);
+    setNewFileName("");
+    setError(null);
+  }, []);
+
   // Render individual file item
   const renderFileItem = (file: Upload) => {
     const fileIcon = getFileIcon(file.fileType);
@@ -220,18 +294,30 @@ export function CaseFiles({
           </div>
 
           {canUpload && (
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleDelete(file.id);
-              }}
-              // Make delete button always visible on mobile with slightly darker bg
-              className="p-1.5 rounded-full bg-gray-300 text-gray-700 hover:text-red-600 hover:bg-red-100 opacity-100 sm:opacity-70 sm:group-hover:opacity-100 transition-opacity ml-2 flex-shrink-0 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-red-900 dark:hover:text-red-400"
-              title="Delete file"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
+            <div className="flex items-center ml-2">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleRename(file);
+                }}
+                className="p-1.5 rounded-full bg-gray-300 text-gray-700 hover:text-blue-600 hover:bg-blue-100 opacity-100 sm:opacity-70 sm:group-hover:opacity-100 transition-opacity mr-1 flex-shrink-0 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-blue-900 dark:hover:text-blue-400"
+                title="Rename file"
+              >
+                <Edit2 className="h-4 w-4" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleDelete(file.id);
+                }}
+                className="p-1.5 rounded-full bg-gray-300 text-gray-700 hover:text-red-600 hover:bg-red-100 opacity-100 sm:opacity-70 sm:group-hover:opacity-100 transition-opacity flex-shrink-0 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-red-900 dark:hover:text-red-400"
+                title="Delete file"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
           )}
         </div>
       </li>
@@ -385,6 +471,44 @@ export function CaseFiles({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rename File</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              value={newFileName}
+              onChange={(e) => setNewFileName(e.target.value)}
+              placeholder="Enter new file name"
+              className="w-full"
+              autoFocus
+            />
+            {error && (
+              <div className="text-sm text-red-700 dark:text-red-400 mt-2">
+                {error}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="default"
+              onClick={cancelRename}
+              disabled={renameLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+            variant="destructive"
+              onClick={confirmRename}
+              disabled={renameLoading || !newFileName.trim()}
+            >
+              {renameLoading ? "Renaming..." : "Rename"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

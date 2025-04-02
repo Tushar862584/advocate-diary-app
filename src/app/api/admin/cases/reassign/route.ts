@@ -49,7 +49,7 @@ export async function POST(request: Request) {
       const unassignedCaseIds = await prisma.$queryRaw`
         SELECT id FROM "Case" WHERE "userId" IS NULL AND "caseType" != 'PERSONAL'
       `;
-      
+
       // No unassigned cases found
       if (!Array.isArray(unassignedCaseIds) || unassignedCaseIds.length === 0) {
         return NextResponse.json({
@@ -57,16 +57,16 @@ export async function POST(request: Request) {
           count: 0,
         });
       }
-      
+
       // Extract the IDs
       const caseIds = unassignedCaseIds.map((c: any) => c.id);
-      
+
       // Update each unassigned case
       const result = await prisma.case.updateMany({
         where: {
           id: {
-            in: caseIds
-          }
+            in: caseIds,
+          },
         },
         data: { userId: targetUserId },
       });
@@ -97,14 +97,14 @@ export async function POST(request: Request) {
       });
 
       let result;
-      
+
       // Determine if we need to filter out PERSONAL cases
       if (isAdminTransferringOwnCases) {
         // If admin is transferring their own cases, exclude PERSONAL cases
         result = await prisma.case.updateMany({
           where: {
             userId: sourceUserId,
-            caseType: { not: "PERSONAL" }
+            caseType: { not: "PERSONAL" },
           },
           data: { userId: targetUserId },
         });
@@ -117,20 +117,16 @@ export async function POST(request: Request) {
       }
 
       // Create appropriate message based on whether PERSONAL cases were excluded
-      let message = `${result.count} case(s) have been reassigned from ${sourceUser.name} to ${targetUser.name}`;
-      
-      // Add info about excluded PERSONAL cases if applicable
-      if (isAdminTransferringOwnCases && totalCasesCount > result.count) {
-        const excludedCount = totalCasesCount - result.count;
-        message += `. ${excludedCount} PERSONAL case(s) were excluded from the transfer.`;
-      }
+      const message = `${result.count} case(s) have been reassigned from ${sourceUser.name} to ${targetUser.name}`;
 
       // Return success response
       return NextResponse.json({
         message,
         count: result.count,
         totalCasesCount,
-        excludedPersonalCases: isAdminTransferringOwnCases ? (totalCasesCount - result.count) : 0,
+        excludedPersonalCases: isAdminTransferringOwnCases
+          ? totalCasesCount - result.count
+          : 0,
       });
     }
   } catch (error) {

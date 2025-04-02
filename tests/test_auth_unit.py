@@ -14,7 +14,7 @@ def test_password_verification():
     def mock_compare(plain_password, hashed_password):
         return plain_password == "password123"
     
-    mock_bcrypt.compare.side_effect = mock_compare
+    mock_bcrypt.compare = mock_compare
     
     # Create the verify function that would use bcrypt
     def verify_password(plain_password, hashed_password):

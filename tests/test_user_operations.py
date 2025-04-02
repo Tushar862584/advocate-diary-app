@@ -1,8 +1,5 @@
-import pytest
 import requests
-import json
 import uuid
-import time
 
 # Utility functions for authentication
 def get_csrf_token(session):

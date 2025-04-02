@@ -24,8 +24,7 @@ Our application combines AI-powered legal research with efficient scheduling and
 ### 📒 Advocate Diary
 
 - **Firm Management**: Admin case allocation, transfers, and statistical dashboards
-- **Schedule Management**: Automated hearing scheduling with integrated leave management
-- **Conflict Prevention**: Smart detection of date conflicts and calendar synchronization
+- **Schedule Management**: Automated hearing scheduling with integrated management features
 
 ### ⚖️ Case Tracking & Management
 
@@ -130,6 +129,7 @@ Create a Python virtual environment for testing:
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install pytest requests playwright pytest-playwright
+playwright install chromium # Setup playwright for e2e testing
 ```
 
 ### Running Tests
@@ -171,6 +171,8 @@ python -m pytest tests/test_login_e2e.py
 ```bash
 python -m pytest
 ```
+
+Running pytest automates testing process and generates `report.html`
 
 ## 📸 Screenshots
 
@@ -227,4 +229,4 @@ The application provides RESTful API endpoints for cases and users:
 
 ## 📜 License
 
-This project is Unlicenced - will be changed later.
+This project is currently Unlicenced - will be changed later.

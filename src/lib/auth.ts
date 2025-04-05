@@ -14,7 +14,8 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      // Override the default redirect behavior
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
@@ -68,9 +69,15 @@ export const authOptions: NextAuthOptions = {
       }
       return token;
     },
+    // Add this callback to override any callbackUrl
+    redirect: ({ url, baseUrl }) => {
+      // Always redirect to the base URL + your path
+      return `${baseUrl}/`;
+      // Or for dashboard: return `${baseUrl}/dashboard`;
+    },
   },
   pages: {
     signIn: "/login",
   },
   secret: process.env.NEXTAUTH_SECRET,
-}; 
+};

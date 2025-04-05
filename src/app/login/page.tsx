@@ -15,6 +15,13 @@ export default function LoginPage() {
   const [loginSuccess, setLoginSuccess] = useState(false);
 
   useEffect(() => {
+    // Clear any callbackUrl from the URL if present
+    if (window.location.search.includes("callbackUrl")) {
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+
+    // Redirect to home if already authenticated
     if (status === "authenticated") {
       router.replace("/");
     }
@@ -39,7 +46,9 @@ export default function LoginPage() {
         setLoginSuccess(true);
         // Add a small delay before redirect for better UX
         setTimeout(() => {
+          // Force redirect to specific path, ignoring any callbackUrl
           router.replace("/");
+          // Or use this for dashboard: router.replace("/dashboard");
         }, 800);
       }
     } catch (err) {

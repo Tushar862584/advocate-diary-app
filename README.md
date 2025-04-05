@@ -174,6 +174,10 @@ python -m pytest
 
 Running pytest automates testing process and generates `report.html`
 
+### Test Reports
+
+View the latest automated test report: [https://kshg9.github.io/advocate-diary-app/report.html](https://kshg9.github.io/advocate-diary-app/report.html)
+
 ## 📸 Screenshots
 
 <div align="center">
@@ -230,3 +234,8 @@ The application provides RESTful API endpoints for cases and users:
 ## 📜 License
 
 This project is currently Unlicenced - will be changed later.
+
+## 🌐 Project Website
+
+Visit our project website for more information and documentation:
+[https://kshg9.github.io/advocate-diary-app/](https://kshg9.github.io/advocate-diary-app/)

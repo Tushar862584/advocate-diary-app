@@ -9,7 +9,7 @@ def test_admin_login_flow():
     """Test admin login process by following the full flow"""
     # First get the CSRF token from the signin page
     session = requests.Session()
-    signin_page = session.get("http://localhost:3000/api/auth/csrf")
+    signin_page = session.get("https://advocate-diary.vercel.app/api/auth/csrf")
     assert signin_page.status_code == 200
     
     csrf_data = signin_page.json()
@@ -21,11 +21,11 @@ def test_admin_login_flow():
         "csrfToken": csrf_token,
         "email": "admin@example.com",
         "password": "password123",
-        "callbackUrl": "http://localhost:3000"
+        "callbackUrl": "https://advocate-diary.vercel.app"
     }
     
     login_response = session.post(
-        "http://localhost:3000/api/auth/callback/credentials",
+        "https://advocate-diary.vercel.app/api/auth/callback/credentials",
         data=login_data
     )
     
@@ -33,7 +33,7 @@ def test_admin_login_flow():
     assert login_response.status_code in [200, 302]
     
     # Check if session contains user data
-    session_response = session.get("http://localhost:3000/api/auth/session")
+    session_response = session.get("https://advocate-diary.vercel.app/api/auth/session")
     assert session_response.status_code == 200
     
     # Just test that we get a response, but don't validate the exact content
@@ -50,7 +50,7 @@ def test_user_login_flow():
     """Test user login process by following the full flow"""
     # First get the CSRF token from the signin page
     session = requests.Session()
-    signin_page = session.get("http://localhost:3000/api/auth/csrf")
+    signin_page = session.get("https://advocate-diary.vercel.app/api/auth/csrf")
     assert signin_page.status_code == 200
     
     csrf_data = signin_page.json()
@@ -62,11 +62,11 @@ def test_user_login_flow():
         "csrfToken": csrf_token,
         "email": "user1@example.com",
         "password": "password123",
-        "callbackUrl": "http://localhost:3000"
+        "callbackUrl": "https://advocate-diary.vercel.app"
     }
     
     login_response = session.post(
-        "http://localhost:3000/api/auth/callback/credentials",
+        "https://advocate-diary.vercel.app/api/auth/callback/credentials",
         data=login_data
     )
     
@@ -74,7 +74,7 @@ def test_user_login_flow():
     assert login_response.status_code in [200, 302]
     
     # Check if session contains user data
-    session_response = session.get("http://localhost:3000/api/auth/session")
+    session_response = session.get("https://advocate-diary.vercel.app/api/auth/session")
     assert session_response.status_code == 200
     
     # Just test that we get a response, but don't validate the exact content
@@ -89,7 +89,7 @@ def test_user_login_flow():
 
 def test_session_endpoint():
     """Test the NextAuth session endpoint"""
-    response = requests.get("http://localhost:3000/api/auth/session")
+    response = requests.get("https://advocate-diary.vercel.app/api/auth/session")
     assert response.status_code == 200
     
     # Response could be empty or contain session data
@@ -98,7 +98,7 @@ def test_session_endpoint():
 
 def test_csrf_token_endpoint():
     """Test that the CSRF token endpoint works"""
-    response = requests.get("http://localhost:3000/api/auth/csrf")
+    response = requests.get("https://advocate-diary.vercel.app/api/auth/csrf")
     assert response.status_code == 200
     
     data = response.json()
@@ -107,7 +107,7 @@ def test_csrf_token_endpoint():
 
 def test_providers_endpoint():
     """Test the providers endpoint"""
-    response = requests.get("http://localhost:3000/api/auth/providers")
+    response = requests.get("https://advocate-diary.vercel.app/api/auth/providers")
     assert response.status_code == 200
     
     # Should return available providers

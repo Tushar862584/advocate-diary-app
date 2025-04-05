@@ -7,7 +7,7 @@ import time
 # Utility functions for authentication
 def get_csrf_token(session):
     """Get CSRF token for authentication"""
-    response = session.get("http://localhost:3000/api/auth/csrf")
+    response = session.get("https://advocate-diary.vercel.app/api/auth/csrf")
     assert response.status_code == 200
     
     data = response.json()
@@ -22,11 +22,11 @@ def authenticate_user(session, email, password):
         "csrfToken": csrf_token,
         "email": email,
         "password": password,
-        "callbackUrl": "http://localhost:3000"
+        "callbackUrl": "https://advocate-diary.vercel.app"
     }
     
     response = session.post(
-        "http://localhost:3000/api/auth/callback/credentials",
+        "https://advocate-diary.vercel.app/api/auth/callback/credentials",
         data=login_data
     )
     
@@ -64,7 +64,7 @@ def test_add_and_delete_case():
     
     # Send request to create case
     create_response = session.post(
-        "http://localhost:3000/api/cases",
+        "https://advocate-diary.vercel.app/api/cases",
         json=case_data
     )
     
@@ -85,17 +85,17 @@ def test_add_and_delete_case():
     assert created_case["respondents"][0]["name"] == f"Respondent {unique_id}"
     
     # Step 2: Verify the case exists by fetching it
-    get_response = session.get(f"http://localhost:3000/api/cases/{case_id}")
+    get_response = session.get(f"https://advocate-diary.vercel.app/api/cases/{case_id}")
     assert get_response.status_code == 200
     fetched_case = get_response.json()
     assert fetched_case["id"] == case_id
     
     # Step 3: Delete the case
-    delete_response = session.delete(f"http://localhost:3000/api/cases/{case_id}")
+    delete_response = session.delete(f"https://advocate-diary.vercel.app/api/cases/{case_id}")
     assert delete_response.status_code == 200
     
     # Step 4: Verify the case has been deleted
-    verify_response = session.get(f"http://localhost:3000/api/cases/{case_id}")
+    verify_response = session.get(f"https://advocate-diary.vercel.app/api/cases/{case_id}")
     assert verify_response.status_code == 404
     
 def test_create_case_validation():
@@ -113,7 +113,7 @@ def test_create_case_validation():
     }
     
     response = session.post(
-        "http://localhost:3000/api/cases",
+        "https://advocate-diary.vercel.app/api/cases",
         json=invalid_case
     )
     
@@ -131,7 +131,7 @@ def test_create_case_validation():
     }
     
     response = session.post(
-        "http://localhost:3000/api/cases",
+        "https://advocate-diary.vercel.app/api/cases",
         json=invalid_case
     )
     

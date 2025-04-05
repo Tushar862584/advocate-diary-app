@@ -4,7 +4,7 @@ import uuid
 # Utility functions for authentication
 def get_csrf_token(session):
     """Get CSRF token for authentication"""
-    response = session.get("http://localhost:3000/api/auth/csrf")
+    response = session.get("https://advocate-diary.vercel.app/api/auth/csrf")
     assert response.status_code == 200
     
     data = response.json()
@@ -19,11 +19,11 @@ def authenticate_user(session, email, password):
         "csrfToken": csrf_token,
         "email": email,
         "password": password,
-        "callbackUrl": "http://localhost:3000"
+        "callbackUrl": "https://advocate-diary.vercel.app"
     }
     
     response = session.post(
-        "http://localhost:3000/api/auth/callback/credentials",
+        "https://advocate-diary.vercel.app/api/auth/callback/credentials",
         data=login_data
     )
     
@@ -49,7 +49,7 @@ def test_add_and_delete_user():
     
     # Send request to create user
     create_response = session.post(
-        "http://localhost:3000/api/admin/users",
+        "https://advocate-diary.vercel.app/api/admin/users",
         json=user_data
     )
     
@@ -66,7 +66,7 @@ def test_add_and_delete_user():
     assert "password" not in created_user["user"]  # Password should not be returned
     
     # Step 2: Verify the user exists by fetching all users
-    get_response = session.get("http://localhost:3000/api/admin/users")
+    get_response = session.get("https://advocate-diary.vercel.app/api/admin/users")
     assert get_response.status_code == 200
     users = get_response.json()
     
@@ -76,11 +76,11 @@ def test_add_and_delete_user():
     assert created_user_in_list["email"] == test_email
     
     # Step 3: Delete the user
-    delete_response = session.delete(f"http://localhost:3000/api/admin/users/{user_id}")
+    delete_response = session.delete(f"https://advocate-diary.vercel.app/api/admin/users/{user_id}")
     assert delete_response.status_code == 200
     
     # Step 4: Verify the user has been deleted
-    get_response = session.get("http://localhost:3000/api/admin/users")
+    get_response = session.get("https://advocate-diary.vercel.app/api/admin/users")
     assert get_response.status_code == 200
     users = get_response.json()
     
@@ -103,7 +103,7 @@ def test_create_user_validation():
     }
     
     response = session.post(
-        "http://localhost:3000/api/admin/users",
+        "https://advocate-diary.vercel.app/api/admin/users",
         json=invalid_user
     )
     
@@ -119,7 +119,7 @@ def test_create_user_validation():
     }
     
     response = session.post(
-        "http://localhost:3000/api/admin/users",
+        "https://advocate-diary.vercel.app/api/admin/users",
         json=invalid_user
     )
     
@@ -135,7 +135,7 @@ def test_create_user_validation():
     }
     
     response = session.post(
-        "http://localhost:3000/api/admin/users",
+        "https://advocate-diary.vercel.app/api/admin/users",
         json=invalid_user
     )
     
@@ -151,7 +151,7 @@ def test_user_permissions():
     # Try to access admin-only endpoints
     
     # Try to list all users
-    response = session.get("http://localhost:3000/api/admin/users")
+    response = session.get("https://advocate-diary.vercel.app/api/admin/users")
     assert response.status_code == 401
     
     # Try to create a new user
@@ -163,7 +163,7 @@ def test_user_permissions():
     }
     
     response = session.post(
-        "http://localhost:3000/api/admin/users",
+        "https://advocate-diary.vercel.app/api/admin/users",
         json=user_data
     )
     

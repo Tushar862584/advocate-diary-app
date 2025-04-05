@@ -14,7 +14,7 @@ def browser_context_args(browser_context_args):
 
 def test_admin_login(page):
     # Navigate to login page
-    page.goto("http://localhost:3000/login")
+    page.goto("https://advocate-diary.vercel.app/login")
     
     # Login process
     page.get_by_role("textbox", name="you@example.com").fill("admin@example.com")
@@ -28,7 +28,7 @@ def test_admin_login(page):
 
 def test_user1_login(page):
     # Navigate to login page
-    page.goto("http://localhost:3000/login")
+    page.goto("https://advocate-diary.vercel.app/login")
     
     # Login process
     page.get_by_role("textbox", name="you@example.com").fill("user1@example.com")
@@ -40,7 +40,7 @@ def test_user1_login(page):
 
 def test_user2_login(page):
     # Navigate to login page
-    page.goto("http://localhost:3000/login")
+    page.goto("https://advocate-diary.vercel.app/login")
     
     # Login process
     page.get_by_role("textbox", name="you@example.com").fill("user2@example.com")

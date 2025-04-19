@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/styledButton";
 import { Lock, Eye, EyeOff } from "lucide-react";
 
 export default function ChangePasswordPage() {

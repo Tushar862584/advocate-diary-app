@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/styledButton";
 import { Send, MessageSquare } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
